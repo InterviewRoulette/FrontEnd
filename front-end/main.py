@@ -34,10 +34,6 @@ class CommentsHandler(tornado.web.RequestHandler):
             comments = json.loads(file.read())
 
         newComment = dict(item.split("=") for item in self.request.body.decode('utf-8').split("&"))
-
-        print(newComment)
-
-        #newComment = (self.request.body.decode('utf-8')).to_dict()
         newComment['id'] = int(time.time() * 1000)
         comments.append(newComment)
 

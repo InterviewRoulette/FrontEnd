@@ -1,22 +1,72 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <title>React Tutorial</title>
-    <!-- Not present in the tutorial. Just for basic styling. -->
-    <link rel="stylesheet" href="css/base.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.0/react.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.0/react-dom.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.6.15/browser.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.3.2/marked.min.js"></script>
-  </head>
-  <body>
-    <div id="content"></div>
-    <script type="text/babel" src="scripts/example.js"></script>
-    <script type="text/babel">
-      // To get started with this tutorial running your own code, simply remove
-      // the script tag loading scripts/example.js and start writing code here.
-    </script>
-  </body>
+    <head>
+        <meta charset="utf-8">
+        <title>React Tutorial</title>
+        <!-- Not present in the tutorial. Just for basic styling. -->
+        <link rel="stylesheet" href="css/styles.css" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.0/react.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.0/react-dom.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.6.15/browser.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.3.2/marked.min.js"></script>
+    </head>
+
+    <body>
+        <div id="header"></div>
+
+        <section class="banner">
+            <div class="container">
+                <div class="half half1 text_centering">
+                    <video width="450" id="front_page_vid" controls>
+                        <source src="videos/intro.mp4" type="video/mp4">
+                    </video>
+                </div>
+                <div class="half half2">
+                    <p class="intro_title">Smash your next coding interview.</p>
+                    <p class="intro_text">Practice online, get feedback, or watch others!</p>
+                    <div class="button getstarted" style="margin-top: 20px;">Get Started</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="white">
+            <div class="container text_centering">
+                <h1>Get Prepared</h1>
+                <div class="thirds boxes"><img class="box_image" src="images/ian_mckellen.jpg"/><a class="hyperlink">Practice Online</a></div>
+                <div class="thirds boxes"><img class="box_image" src="images/ian_mckellen.jpg"/><a class="hyperlink">Get Feedback</a></div>
+                <div class="thirds boxes"><img class="box_image" src="images/ian_mckellen.jpg"/><a class="hyperlink">Watch Others</a></div>
+            </div>
+        </section>
+
+        <section class="navy" style="padding-top: 22px; padding-bottom: 14px; height: 50px; margin-bottom: 20px; text-align: center">
+            <div class="container">
+                <p class="signup">Sign up now</p> <div class="button getstarted button_dark" style="display:inline-block;">Get Started</div>
+            </div>
+        </section>
+
+        <section class="white">
+            <div class="container">
+                <h1 style="text-align: left">Practice Online</h1>
+                <p>Get interviewed live online!</p>
+                <img class="about_image" src="images/aboutimage.png"/>
+
+                <div style="text-align: right">
+                    <h1 style="text-align: right">Get Feedback</h1>
+                    <p>Let others watch and review your video!</p>
+                    <img class="about_image" src="images/aboutimage.png"/>
+                </div>
+
+                <h1 style="text-align: left">Watch Others</h1>
+                <p>Take a look at how others perform and learn from them!</p>
+                <img class="about_image" src="images/aboutimage.png"/>
+            </div>
+        </section>
+
+        <div id="footer"></div>
+
+
+        <script type="text/babel" src="scripts/header.js"></script>
+        <script type="text/babel" src="scripts/footer.js"></script>
+    </body>
 </html>

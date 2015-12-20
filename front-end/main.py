@@ -1,32 +1,27 @@
 #!/usr/bin/env python
-import tornado.httpserver
-import tornado.ioloop
-import tornado.options
-import tornado.web
+import json
+import os
+import time
+from flask import Flask, Response, request
 
-from tornado.options import define, options
+app = Flask(__name__, static_url_path='', static_folder='public')
+app.add_url_rule('/', 'root', lambda: app.send_static_file('index.html'))
 
-# For using print() to log nicely
-from tornado.log import enable_pretty_logging
-enable_pretty_logging()
+@app.route('/api/comments', methods=['GET', 'POST'])
+def comments_handler():
 
+    with open('comments.json', 'r') as file:
+        comments = json.loads(file.read())
 
-define("port", default=8888, help="run on the given port", type=int)
+    if request.method == 'POST':
+        newComment = request.form.to_dict()
+        newComment['id'] = int(time.time() * 1000)
+        comments.append(newComment)
 
+        with open('comments.json', 'w') as file:
+            file.write(json.dumps(comments, indent=4, separators=(',', ': ')))
 
-class MainHandler(tornado.web.RequestHandler):
-    def get(self):
-        self.write("Hello, world")
+    return Response(json.dumps(comments), mimetype='application/json', headers={'Cache-Control': 'no-cache'})
 
-def main():
-    tornado.options.parse_command_line()
-    application = tornado.web.Application([
-        (r"/", MainHandler),
-    ])
-    http_server = tornado.httpserver.HTTPServer(application)
-    http_server.listen(options.port)
-    tornado.ioloop.IOLoop.current().start()
-
-
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    app.run(port=int(os.environ.get("PORT",8888)))

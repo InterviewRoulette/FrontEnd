@@ -1,5 +1,5 @@
 # FrontEnd (InterviewRoulette)
-Server for handling realtime video/text sent during the interview
+Quick repo for a front end server
 
 ## Building
 

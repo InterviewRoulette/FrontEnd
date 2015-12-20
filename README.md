@@ -1,4 +1,4 @@
-# InterviewServer
+# FrontEnd (InterviewRoulette)
 Server for handling realtime video/text sent during the interview
 
 ## Building

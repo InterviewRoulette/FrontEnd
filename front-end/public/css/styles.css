@@ -324,11 +324,26 @@ footer {
 }
 
 
+.account_info {
+	margin-top: 20px;
+	font-size: 1.1rem;
+    line-height: 2;
+    letter-spacing: 0.02rem;
+}
+
+.account_section {
+	display: inline-block;
+    border-left: 2px solid #22b8eb;
+    margin-right: 4px;
+    padding-left: 20px;
+    font-style: italic;
+}
+
 .account_vids {
 	border-top: 2px solid #22b8eb;
 	border-radius: 5px;
-	margin-top: 20px;
-	background-color: #eee;
+	margin-bottom: 20px;
+	background-color: #f7f7f7;
 	min-height: 400px;
 }
 
@@ -336,18 +351,39 @@ footer {
 	margin-left: 10px;
 }
 
+.mb10{
+	margin-bottom: 10px;
+	display: block;
+}
+
 .textRight {
 	text-align: right;
 }
 
+.account_welcome {
+	font-size: 1.8rem;
+}
 
+.minH {
+	min-height: 650px;
+}
 
+.edit {
+	cursor: pointer;
+	color: #ddd;
+    font-size: 13pt !important;
+    display: inline-block;
+    margin-left: 4px;
+}
 
+.edit:hover {
+	color: #22b8eb;
+}
 
-
-
-
-
+.bluetop {
+	border-top: 2px solid #22b8eb;
+	margin-top: 20px;
+}
 
 
 

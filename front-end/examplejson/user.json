@@ -1,0 +1,11 @@
+[
+	{
+		"uid": 0001,
+		"username": "djprof",
+		"firstname": "Dave",
+		"surname": "Cliff",
+		"email": "csdtc@bristol.ac.uk",
+		"newsletter": true,
+		"premium": false
+	}
+]

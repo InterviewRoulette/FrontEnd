@@ -2,26 +2,38 @@
 import json
 import os
 import time
-from flask import Flask, Response, request
 
-app = Flask(__name__, static_url_path='', static_folder='public')
-app.add_url_rule('/', 'root', lambda: app.send_static_file('index.html'))
+import tornado.httpserver
+import tornado.ioloop
+import tornado.options
+import tornado.web
 
-@app.route('/api/comments', methods=['GET', 'POST'])
-def comments_handler():
+from tornado.options import define, options
 
-    with open('comments.json', 'r') as file:
-        comments = json.loads(file.read())
+# For using print() to log nicely
+from tornado.log import enable_pretty_logging
+enable_pretty_logging()
 
-    if request.method == 'POST':
-        newComment = request.form.to_dict()
-        newComment['id'] = int(time.time() * 1000)
-        comments.append(newComment)
+define("port", default=8888, help="run on the given port", type=int)
+public_root = os.path.join(os.path.dirname(__file__), 'public')
 
-        with open('comments.json', 'w') as file:
-            file.write(json.dumps(comments, indent=4, separators=(',', ': ')))
 
-    return Response(json.dumps(comments), mimetype='application/json', headers={'Cache-Control': 'no-cache'})
+class MainHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.redirect('/index.html')
+
+def main():
+    tornado.options.parse_command_line()
+
+    handlers = [
+        (r'/', MainHandler),
+        (r'/(.*)', tornado.web.StaticFileHandler, {'path': public_root}),
+    ]
+
+    application = tornado.web.Application(handlers)
+    http_server = tornado.httpserver.HTTPServer(application)
+    http_server.listen(options.port)
+    tornado.ioloop.IOLoop.current().start()
 
 if __name__ == '__main__':
-    app.run(port=int(os.environ.get("PORT",8888)))
+    main()

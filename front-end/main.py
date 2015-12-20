@@ -22,11 +22,36 @@ class MainHandler(tornado.web.RequestHandler):
     def get(self):
         self.redirect('/index.html')
 
+class CommentsHandler(tornado.web.RequestHandler):
+    def get(self):
+        with open('comments.json', 'r') as file:
+            comments = json.loads(file.read())
+
+        return self.write(json.dumps(comments))
+
+    def post(self):
+        with open('comments.json', 'r') as file:
+            comments = json.loads(file.read())
+
+        newComment = dict(item.split("=") for item in self.request.body.decode('utf-8').split("&"))
+
+        print(newComment)
+
+        #newComment = (self.request.body.decode('utf-8')).to_dict()
+        newComment['id'] = int(time.time() * 1000)
+        comments.append(newComment)
+
+        with open('comments.json', 'w') as file:
+            file.write(json.dumps(comments, indent=4, separators=(',', ': ')))
+
+        return self.write(json.dumps(comments))
+
 def main():
     tornado.options.parse_command_line()
 
     handlers = [
         (r'/', MainHandler),
+        (r'/api/comments', CommentsHandler),
         (r'/(.*)', tornado.web.StaticFileHandler, {'path': public_root}),
     ]
 

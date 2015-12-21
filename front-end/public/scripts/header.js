@@ -10,7 +10,7 @@ var Header = React.createClass({
 					<div className="nav">
 						<a className="hyperlink navlink" href="interviews.html">interviews</a>
 						<a className="hyperlink navlink" href="account.html">account center</a>
-						<div className="ml10 button getstarted">Get Started</div>
+						<a href="takeinterview.html"><div className="ml10 button getstarted">Get Started</div></a>
 					</div>
 				</div>
 			</header>

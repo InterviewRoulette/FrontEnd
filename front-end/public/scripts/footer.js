@@ -3,7 +3,7 @@ var Footer = React.createClass({
 		return (
 			<footer>
 				<div className="container textRight">
-					<div className="button getstarted button_dark">Get Started</div>
+					<a href="takeinterview.html"><div className="button getstarted button_dark">Get Started</div></a>
 				</div>
 			</footer>
 		);

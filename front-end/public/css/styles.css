@@ -146,14 +146,16 @@ footer {
 
 .logo {
 	padding: 10px 0px;
-	width: 200px;
+	width: 400px;
 	height: 80px;
 	display: inline-block;
 }
 
 .logo img {
-	height: 80px;
-	width: 200px;
+	width: 300px;
+    margin-top: 22px;
+    display: block;
+    margin-left: -15px;
 }
 
 .nav
@@ -161,7 +163,7 @@ footer {
 	text-align: right;
 	margin-top: 30px;
 	display: inline-block;
-	width: 750px;
+	width: 550px;
 	vertical-align: top;
 }
 
@@ -268,7 +270,7 @@ footer {
 
 .vid_box {
 	display: inline-block;
-	background-color: #eee;
+	/*background-color: #eee;*/
 	width: 180px;
 	height: 160px;
 }
@@ -297,7 +299,6 @@ footer {
 .vid_box_ratings {
 	display: inline-block;
 	width: 100px;
-	background-color: #eee;
 	height: 20px;
 	margin-top: 5px;
 }
@@ -430,9 +431,15 @@ footer {
 	margin: 10px 0px;
 }
 
+.star {
+	height: 16px;
+	width: 16px;
+}
 
-
-
+.interview_video_thumbnail {
+	height: 120px;
+	margin-top: 17px;
+}
 
 
 

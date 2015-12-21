@@ -4,7 +4,7 @@ var Header = React.createClass({
 			<header>
 				<div className="container">
 					<a href="index.html"><div className="logo">
-						<img src="images/logo.png" />
+						<img src="images/logo_template.png" />
 					</div></a>
 
 					<div className="nav">

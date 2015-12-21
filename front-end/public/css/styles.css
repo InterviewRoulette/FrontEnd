@@ -485,5 +485,76 @@ footer {
 }
 
 
+select {
+	display: inline-block;
+	border: 1px solid #22b8eb;
+	padding: 5px 35px 5px 10px;
+	font-size: 10pt;
+	height: 34px;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	background: url('../images/down.png') 96% / 15% no-repeat #fff;
+	border-radius: 0px;
+	margin-left: 30px;
+	width: 150px;
+	cursor: pointer;
+}
+
+select:hover {
+	background-color: #eee;
+}
+
+select:active, select:hover {
+  outline: none;
+}
+
+input {
+	width: 310px;
+    padding: 5px 35px 5px 10px;
+    font-size: 10pt;
+    border-radius: 0px;
+    height: 26px;
+    border: 1px solid #22b8eb;
+    margin-top: 17px;
+}
+
+.mt20 {
+	margin-top: 20px;
+}
+
+.ml70 {
+	margin-left: 70px;
+}
+
+.interview_choice {
+	height: 50px;
+}
+
+.emph {
+	font-weight: 400;
+	color: #ff992e;
+}
+
+.option_button {
+	display: inline-block;
+	border: 1px solid #22b8eb;
+	font-size: 10pt;
+	margin-right: 20px;
+	padding: 5px 10px;
+	cursor: pointer;
+	margin-top: 20px;
+}
+
+.option_button_selected {
+	background-color: #eee;
+	-webkit-box-shadow: 0px 0px 3px 1px rgba(34,184,235,0.75);
+	-moz-box-shadow: 0px 0px 3px 1px rgba(34,184,235,0.75);
+	box-shadow: 0px 0px 3px 1px rgba(34,184,235,0.75);
+}
+
+.option_button:hover {
+	background-color: #eee;
+}
 
 

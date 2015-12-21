@@ -440,8 +440,49 @@ footer {
 	margin-top: 17px;
 }
 
+.tc {
+	text-align: center;
+}
+
+.getting_started_intro {
+    height: 250px;
+}
+
+.breaker {
+	margin-bottom: 50px;
+	margin-top: 50px;
+	border-top: 2px solid #22b8eb;
+}
+
+.get_started_table td {
+	width: 450px;
+	vertical-align: top;
+}
+
+.get_started_table img {
+	max-width: 300px;
+	height: 200px;
+}
+
+.get_started_table ul {
+	padding-left: 35px;
+	margin-top: 50px;
+}
 
 
+.get_started_table li {
+	color: #22b8eb;
+	font-size: 14pt;
+	padding-left: 20px;
+}
+
+.get_started_table li span{
+	color: black;
+}
+
+.mt50 {
+	margin-top: 50px;
+}
 
 
 

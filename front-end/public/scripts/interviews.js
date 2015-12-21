@@ -31,7 +31,6 @@ var InterviewList = React.createClass({
 		return (
 			<span>
 				{this.props.videos.map(function(interview) {
-					console.log(interview);
 					return (
 						<span>
 							<IndividualInterview video={interview} />

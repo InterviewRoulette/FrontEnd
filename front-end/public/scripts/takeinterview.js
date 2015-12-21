@@ -1,11 +1,33 @@
 var InterviewApp = React.createClass({
+	getInitialState: function() {
+		return ({currentStage: 0});
+	},
+
+	nextStage: function() {
+		console.log("next stage");
+		this.setState({currentStage: this.state.currentStage+1});
+	},
+
 	render: function() {
-		return (
-			<GetStarted />
-		);
+		switch(this.state.currentStage){
+			case 0: return (<GetStarted nextStage={this.nextStage}/>); break;
+			case 1: return (<InterviewDetails nextStage={this.nextStage}/>); break;
+			default: null;
+		}
+			
 	}
 });
 
+var InterviewDetails = React.createClass({
+	render: function() {
+		return (
+			<div>
+				<section className="white minH">
+				</section>
+			</div>
+		);
+	}
+});
 
 var GetStarted = React.createClass({
 	render: function() {
@@ -30,7 +52,7 @@ var GetStarted = React.createClass({
 						<h3>Ready?</h3>
 						<br />
 						<div className="tc">
-							<div className="button">Lets Go</div>
+							<div onClick={this.props.nextStage} className="button">Lets Go</div>
 						</div>
 					</div>
 				</section>
@@ -46,14 +68,16 @@ var OutlineTable = React.createClass({
 				<div className="breaker"></div>
 				<h3>{this.props.title}</h3>
 				<table className="get_started_table">
-					{this.props.content.map(function(entry) {
-						return (
-							<tr>
-								<td><ul><li><span>{entry.words}</span></li></ul></td>
-								<td className="tc"><img src={"images/"+entry.image} /></td>
-							</tr>
-						);
-					}, this)}
+					<tbody>
+						{this.props.content.map(function(entry) {
+							return (
+								<tr>
+									<td><ul><li><span>{entry.words}</span></li></ul></td>
+									<td className="tc"><img src={"images/"+entry.image} /></td>
+								</tr>
+							);
+						}, this)}
+					</tbody>
 				</table>
 			</div>
 		);

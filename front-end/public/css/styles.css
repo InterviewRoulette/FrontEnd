@@ -368,6 +368,10 @@ footer {
 	min-height: 650px;
 }
 
+.minH530 {
+	min-height: 530px;
+}
+
 .edit {
 	cursor: pointer;
 	color: #ddd;
@@ -385,7 +389,46 @@ footer {
 	margin-top: 20px;
 }
 
+.alert {
+	position: fixed;
+    top: 0;
+    left: 0;
+    margin: 0 auto;
+    background: rgba(200,200,200,0.5);
+    width: 100vw;
+    height: 100vh;
+}
 
+.alert_inner {
+	margin: 200px auto;
+    padding-bottom: 45px;
+    background-color: white;
+    width: 400px;
+    border: 2px solid #22b8eb;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.alert_inner p {
+	text-align: center;
+    margin: 50px 50px;
+    word-break: break-all;
+    font-size: 14pt;
+    color: #22b8eb;
+}
+
+.blue_button {
+	background-color: #22b8eb;
+}
+
+.blue_button:hover {
+	background-color: #0B799E;
+}
+
+.mpnew {
+	padding: 20px 0px; 
+	margin: 10px 0px;
+}
 
 
 

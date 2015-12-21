@@ -1,7 +1,15 @@
 var AccountInfo = React.createClass({
 
+	getInitialState: function() {
+		return ({showAlert: false});
+	},
+
+	closeAlert: function() {
+		this.setState({showAlert: false});
+	},
+
 	comingSoon: function() {
-		alert("This feature is coming soon!");
+		this.setState({showAlert: true});
 	},
 
 	render: function() {
@@ -9,7 +17,7 @@ var AccountInfo = React.createClass({
 		return (
 			<section className="white minH bluetop">
 				<div className="container">
-					<h1>Hi James,</h1>
+					<h1>Hi {this.props.user[0].firstname},</h1>
 					<h1 className="account_welcome">Welcome to your account</h1>
 
 					<br />
@@ -27,8 +35,25 @@ var AccountInfo = React.createClass({
 
 					</div>
 				</div>
+				{this.state.showAlert ? <Alert close={this.closeAlert}/> : null}
 			</section>
 		);
+	}
+});
+
+var Alert = React.createClass({
+	close: function() {
+		this.props.close();
+	},
+
+	render: function() {
+		return (
+			<div className="alert">
+				<div className="alert_inner">
+					<p>This feature is coming soon!</p>
+					<div onClick={this.close} className="button alert_button">Gotcha</div>
+				</div>	
+			</div>);
 	}
 });
 

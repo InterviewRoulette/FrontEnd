@@ -1,19 +1,35 @@
 var InterviewApp = React.createClass({
 	getInitialState: function() {
-		return ({currentStage: 0});
+		return ({currentStage: 0, showAlert: false});
 	},
 
 	nextStage: function() {
 		this.setState({currentStage: this.state.currentStage+1});
 	},
 
+	showAlert: function() {
+		this.setState({showAlert: true});
+	},
+
+	closeAlert: function() {
+		this.setState({showAlert: false});
+	},
+
 	render: function() {
+		var component = null;
 		switch(this.state.currentStage){
-			case 0: return (<InterviewInstructions nextStage={this.nextStage}/>); break;
-			case 1: return (<InterviewDetails nextStage={this.nextStage}/>); break;
-			case 2: return (<InterviewReview nextStage={this.nextStage}/>); break;
+			case 0: component = (<InterviewInstructions showAlert={this.showAlert} nextStage={this.nextStage}/>); break;
+			case 1: component = (<InterviewDetails showAlert={this.showAlert} nextStage={this.nextStage}/>); break;
+			case 2: component = (<InterviewReview showAlert={this.showAlert} nextStage={this.nextStage}/>); break;
 			default: null;
 		}
+
+		return (
+			<div>
+				{component}
+				{this.state.showAlert ? <Alert close={this.closeAlert}/> : null}
+			</div>
+		);
 			
 	}
 });
@@ -23,6 +39,7 @@ var InterviewReview = React.createClass({
 		return (
 			<section className="white bluetop minH">
 				<div className="container">
+
 				</div>
 			</section>
 		);
@@ -66,7 +83,6 @@ var InterviewDetails = React.createClass({
 											<option value="java">java</option>
 											<option value="javascript">javascript</option>
 											<option value="haskell">haskell</option>
-
 										</select>
 									</td>
 								</tr>
@@ -75,24 +91,24 @@ var InterviewDetails = React.createClass({
 
 						<h4>Choose interview difficulty:</h4> 
 						<div className="option_button ml70 option_button_selected">easy</div>
-						<div className="option_button">medium</div>
-						<div className="option_button">hard</div>
-						<div className="option_button">expert</div>
+						<div className="option_button" onClick={this.props.showAlert}>medium</div>
+						<div className="option_button" onClick={this.props.showAlert}>hard</div>
+						<div className="option_button" onClick={this.props.showAlert}>expert</div>
 						<br />
 						<br />
 
 						<h4>Choose interview length:</h4> 
-						<div className="option_button ml70">15mins</div>
-						<div className="option_button">30mins</div>
+						<div className="option_button ml70" onClick={this.props.showAlert}>15mins</div>
+						<div className="option_button" onClick={this.props.showAlert}>30mins</div>
 						<div className="option_button option_button_selected">1hour</div>
-						<div className="option_button">4x1hour</div>
+						<div className="option_button" onClick={this.props.showAlert}>4x1hour</div>
 						<br />
 						<br />
 
 						<h4>Choose recording type:</h4> 
 						<div className="option_button ml70 option_button_selected">video, audio, text</div>
-						<div className="option_button">audio, text</div>
-						<div className="option_button">text, only</div>
+						<div className="option_button" onClick={this.props.showAlert}>audio, text</div>
+						<div className="option_button" onClick={this.props.showAlert}>text, only</div>
 						<br />
 						<br />
 
@@ -166,6 +182,23 @@ var OutlineTable = React.createClass({
 		);
 	}
 });
+
+var Alert = React.createClass({
+	close: function() {
+		this.props.close();
+	},
+
+	render: function() {
+		return (
+			<div className="alert">
+				<div className="alert_inner">
+					<p>This feature is coming soon!</p>
+					<div onClick={this.close} className="button alert_button">Gotcha</div>
+				</div>	
+			</div>);
+	}
+});
+
 
 var TakingInterviewOutline = [
 	{

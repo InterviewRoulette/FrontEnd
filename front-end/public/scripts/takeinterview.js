@@ -21,7 +21,12 @@ var InterviewApp = React.createClass({
 			case 0: component = (<InterviewInstructions showAlert={this.showAlert} nextStage={this.nextStage}/>); break;
 			case 1: component = (<InterviewDetails showAlert={this.showAlert} nextStage={this.nextStage}/>); break;
 			case 2: component = (<InterviewReview showAlert={this.showAlert} nextStage={this.nextStage}/>); break;
-			default: null;
+			case 3: component = (<PreparingInterview nextStage={this.nextStage}/>); break;
+			case 4: component = (<NewQuestion nextStage={this.nextStage}/>);break;
+			case 5: component = (<Finalizing nextStage={this.nextStage}/>);break;
+			case 6: component = (<Finished nextStage={this.nextStage}/>);break;
+			
+			default: this.setState({currentStage: 0});
 		}
 
 		return (
@@ -31,6 +36,68 @@ var InterviewApp = React.createClass({
 			</div>
 		);
 			
+	}
+});
+
+var Finished = React.createClass({
+	render: function() {
+		return (
+			<section className="white bluetop minH">
+				<div className="container">
+					<h1>Finished</h1>
+					<h3>Well done!</h3>
+					<div className="tc">
+						<div onClick={this.props.nextStage} className="button">Manual Continue</div>
+					</div>
+				</div>
+			</section>
+		);
+	}
+});
+
+var Finalizing = React.createClass({
+	render: function() {
+		return (
+			<section className="white bluetop minH">
+				<div className="container">
+					<h1>Uploading...</h1>
+					This streams as they do it but this is a final sort of wait till we are ready
+					<div className="tc">
+						<div onClick={this.props.nextStage} className="button">Manual Continue</div>
+					</div>
+				</div>
+			</section>
+		);
+	}
+});
+
+var NewQuestion = React.createClass({
+	render: function() {
+		return (
+			<section className="white bluetop minH">
+				<div className="container">
+					<h1>Question #</h1>
+					<div className="tc">
+						<div onClick={this.props.nextStage} className="button">Manual Continue</div>
+					</div>
+				</div>
+			</section>
+		);
+	}
+});
+
+var PreparingInterview = React.createClass({
+	render: function() {
+		return (
+			<section className="white bluetop minH">
+				<div className="container">
+					<h1>Preparing</h1>
+					<div className="tc">
+						<div onClick={this.props.nextStage} className="button">Manual Continue</div>
+					</div>
+				</div>
+			</section>
+		);
 	}
 });
 
@@ -44,7 +111,7 @@ var InterviewReview = React.createClass({
 					<br />
 					<div>
 						<video src="/" className="video_capture_window" controls></video>
-						<textarea className="coding_capture_window" value="#include <stdlib.c>&#13;&#13;int main(int argc, char **argv)&#13;{&#13;&nbsp;&nbsp;&nbsp;&nbsp;printf('hello world\n');&#13;&#13;&nbsp;&nbsp;&nbsp;&nbsp;return 0;&#13;}"/>
+						<textarea className="coding_capture_window" defaultValue="#include <stdlib.c>&#13;&#13;int main(int argc, char **argv)&#13;{&#13;&nbsp;&nbsp;&nbsp;&nbsp;printf('hello world\n');&#13;&#13;&nbsp;&nbsp;&nbsp;&nbsp;return 0;&#13;}"/>
 					</div>
 					<br />
 					<div className="further_instructions">
@@ -56,7 +123,7 @@ var InterviewReview = React.createClass({
 					<br />
 					<br />
 					<div className="tc">
-						<div className="button">Begin</div>
+						<div onClick={this.props.nextStage} className="button">Begin</div>
 					</div>
 				</div>
 			</section>

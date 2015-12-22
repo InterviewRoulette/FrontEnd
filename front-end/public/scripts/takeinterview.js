@@ -39,7 +39,25 @@ var InterviewReview = React.createClass({
 		return (
 			<section className="white bluetop minH">
 				<div className="container">
-
+					<h1>All set to begin!</h1>
+					<br />
+					<br />
+					<video src="/" className="video_capture_window" controls></video>
+					<textarea className="coding_capture_window" value="#include <stdlib.c>&#13;&#13;int main(int argc, char **argv)&#13;{&#13;&nbsp;&nbsp;&nbsp;&nbsp;printf('hello world\n');&#13;&#13;&nbsp;&nbsp;&nbsp;&nbsp;return 0;&#13;}"/>
+					<br />
+					<br />
+					<br />
+					<div className="further_instructions">
+						<ul>
+							<li><span>Above you can see your video capture(left) and code editor(right)</span></li>
+							<li><span>If all is working, click below to begin</span></li>
+						</ul>
+					</div>
+					<br />
+					<br />
+					<div className="tc">
+						<div className="button">Begin</div>
+					</div>
 				</div>
 			</section>
 		);

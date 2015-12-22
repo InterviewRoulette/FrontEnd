@@ -464,19 +464,19 @@ footer {
 	height: 200px;
 }
 
-.get_started_table ul {
+.get_started_table ul, .further_instructions ul {
 	padding-left: 35px;
 	margin-top: 50px;
 }
 
 
-.get_started_table li {
+.get_started_table li, .further_instructions li {
 	color: #22b8eb;
 	font-size: 14pt;
 	padding-left: 20px;
 }
 
-.get_started_table li span{
+.get_started_table li span, .further_instructions span{
 	color: black;
 }
 
@@ -557,4 +557,28 @@ input {
 	background-color: #eee;
 }
 
+.video_capture_window {
+	height: 300px;
+	width: 400px;
+	display: inline-block;
+}
 
+.coding_capture_window {
+	height: 22em;
+	width: 28em;
+	display: inline-block;
+	margin-left: 50px;
+	font-family: 'consolas';
+	font-size: 10pt;
+	line-height: 1.5;
+	letter-spacing: 0.05rem;
+	border: none;
+	background-color: #333;
+	color: white;
+	border-radius: 10px;
+	padding: 10px;
+}
+
+.coding_capture_window:active, .coding_capture_window:hover {
+  outline: none;
+}

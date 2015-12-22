@@ -60,8 +60,8 @@ var Finalizing = React.createClass({
 		return (
 			<section className="white bluetop minH">
 				<div className="container">
-					<h1>Uploading...</h1>
-					This streams as they do it but this is a final sort of wait till we are ready
+					<h1>Finalizing</h1>
+					<img className="loading" src="images/loading_gif.gif" />
 					<div className="tc">
 						<div onClick={this.props.nextStage} className="button">Manual Continue</div>
 					</div>
@@ -92,6 +92,8 @@ var PreparingInterview = React.createClass({
 			<section className="white bluetop minH">
 				<div className="container">
 					<h1>Preparing</h1>
+
+					<img className="loading" src="images/loading_gif.gif" />
 					<div className="tc">
 						<div onClick={this.props.nextStage} className="button">Manual Continue</div>
 					</div>

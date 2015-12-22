@@ -583,3 +583,9 @@ input {
 .coding_capture_window:active, .coding_capture_window:hover {
   outline: none;
 }
+
+.loading {
+	height: 250px;
+    margin:50px auto;
+    display: block;
+}

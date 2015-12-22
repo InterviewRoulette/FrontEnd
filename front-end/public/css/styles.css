@@ -561,11 +561,12 @@ input {
 	height: 300px;
 	width: 400px;
 	display: inline-block;
+	vertical-align: top;
 }
 
 .coding_capture_window {
-	height: 22em;
-	width: 28em;
+	height: 25em;
+    width: 28em;
 	display: inline-block;
 	margin-left: 50px;
 	font-family: 'consolas';

@@ -42,10 +42,10 @@ var InterviewReview = React.createClass({
 					<h1>All set to begin!</h1>
 					<br />
 					<br />
-					<video src="/" className="video_capture_window" controls></video>
-					<textarea className="coding_capture_window" value="#include <stdlib.c>&#13;&#13;int main(int argc, char **argv)&#13;{&#13;&nbsp;&nbsp;&nbsp;&nbsp;printf('hello world\n');&#13;&#13;&nbsp;&nbsp;&nbsp;&nbsp;return 0;&#13;}"/>
-					<br />
-					<br />
+					<div>
+						<video src="/" className="video_capture_window" controls></video>
+						<textarea className="coding_capture_window" value="#include <stdlib.c>&#13;&#13;int main(int argc, char **argv)&#13;{&#13;&nbsp;&nbsp;&nbsp;&nbsp;printf('hello world\n');&#13;&#13;&nbsp;&nbsp;&nbsp;&nbsp;return 0;&#13;}"/>
+					</div>
 					<br />
 					<div className="further_instructions">
 						<ul>

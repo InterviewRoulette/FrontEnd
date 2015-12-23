@@ -9,6 +9,7 @@ import tornado.options
 import tornado.web
 
 from tornado.options import define, options
+from tornado.escape import json_encode
 
 # For using print() to log nicely
 from tornado.log import enable_pretty_logging
@@ -22,11 +23,20 @@ class MainHandler(tornado.web.RequestHandler):
     def get(self):
         self.redirect('/index.html')
 
+class GetInterviews(tornado.web.RequestHandler):
+    def get(self):
+        interviews = [];
+        with open('examplejson/video.json') as data_file:    
+            interviews = json.load(data_file)
+
+        self.write(json_encode(interviews))
+
 def main():
     tornado.options.parse_command_line()
 
     handlers = [
         (r'/', MainHandler),
+        (r'/api/getinterviews', GetInterviews),
         (r'/(.*)', tornado.web.StaticFileHandler, {'path': public_root}),
     ]
 

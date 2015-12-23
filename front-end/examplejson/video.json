@@ -1,14 +1,14 @@
 [
 	{
-		vid: "0001",
-		username: "djprof",
-		video_url: "www.jamesburnside.com/",
-		text_url: "www.alxhill.com/",
-		thumbnail: "www.samhealer.com/",
-		tags: ["array", "strings"],
-		language: "python",
-		rating: 5.0,
-		comments: 
+		"vid": "0001",
+		"username": "djprof",
+		"video_url": "www.jamesburnside.com/",
+		"text_url": "www.alxhill.com/",
+		"thumbnail": "www.samhealer.com/",
+		"tags": ["array", "strings"],
+		"language": "python",
+		"rating": 5.0,
+		"comments": 
 			[
 				{"djprof": "Greatest interview in all existance"},
 				{"djprof": "Me again, just rewatched it, this was so good!"},
@@ -16,19 +16,19 @@
 			]
 	},
 	{
-		vid: "0002",
-		username: "djprof",
-		video_url: "www.jamesburnside.com/",
-		text_url: "www.alxhill.com/",
-		thumbnail: "www.samhealer.com/",
-		tags: ["array", "strings"],
-		language: "C++",
-		rating: 4.0,
-		comments: 
+		"vid": "0002",
+		"username": "djprof",
+		"video_url": "www.jamesburnside.com/",
+		"text_url": "www.alxhill.com/",
+		"thumbnail": "www.samhealer.com/",
+		"tags": ["array", "strings"],
+		"language": "C++",
+		"rating": 4.0,
+		"comments": 
 			[
 				{"djprof": "Greatest interview in all existance"},
 				{"djprof": "Me again, just rewatched it, this was so good!"},
 				{"jb12459": "@djprof, not too bad I guess..."}
 			]
 	}
-];
+]

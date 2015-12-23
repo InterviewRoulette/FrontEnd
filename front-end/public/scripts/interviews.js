@@ -1,14 +1,24 @@
 var Interviews = React.createClass({
-	loadVideosFromServer: function() {
-
+	loadInterviewsFromServer: function() {
+		$.ajax({
+			url: "/api/getinterviews",
+			dataType: 'json',
+			cache: false,
+			success: function(data) {
+				this.setState({data: data});
+			}.bind(this),
+			error: function(xhr, status, err) {
+				console.error(this.props.url, status, err.toString());
+			}.bind(this)
+		});
 	},
 
 	getInitialState: function() {
-		// Spam a bunch of videos:
-		for (var i=0; i < 3; i++)
-			ExampleVideos = ExampleVideos.concat(ExampleVideos);
+		return {data: []};
+	},
 
-		return {videos: ExampleVideos}
+	componentDidMount: function() {
+	    this.loadInterviewsFromServer();
 	},
 
 	render: function() {
@@ -18,7 +28,7 @@ var Interviews = React.createClass({
 
 				<section className="white minH530">
 					<div className="container">
-						<InterviewList videos={this.state.videos} />
+						<InterviewList videos={this.state.data} />
 					</div>
 				</section>
 			</div>
@@ -89,41 +99,6 @@ var IndividualInterview = React.createClass({
 	}
 });
 
-
-var ExampleVideos = [
-	{
-		vid: "0001",
-		username: "djprof",
-		video_url: "www.jamesburnside.com/",
-		text_url: "www.alxhill.com/",
-		thumbnail: "www.samhealer.com/",
-		tags: ["array", "strings"],
-		language: "python",
-		rating: 5.0,
-		comments: 
-			[
-				{"djprof": "Greatest interview in all existance"},
-				{"djprof": "Me again, just rewatched it, this was so good!"},
-				{"jb12459": "@djprof, not too bad I guess..."}
-			]
-	},
-	{
-		vid: "0002",
-		username: "djprof",
-		video_url: "www.jamesburnside.com/",
-		text_url: "www.alxhill.com/",
-		thumbnail: "www.samhealer.com/",
-		tags: ["array", "strings"],
-		language: "C++",
-		rating: 4.7,
-		comments: 
-			[
-				{"djprof": "Greatest interview in all existance"},
-				{"djprof": "Me again, just rewatched it, this was so good!"},
-				{"jb12459": "@djprof, not too bad I guess..."}
-			]
-	}
-];
 
 ReactDOM.render(
   <Interviews />,

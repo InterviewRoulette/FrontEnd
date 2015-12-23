@@ -81,8 +81,10 @@ def main():
     application = tornado.web.Application(handlers)
     ioloop = tornado.ioloop.IOLoop.current()
 
+    dbpassword = os.environ.get('DATABASEPASSWORD')
+
     application.db = momoko.Pool(
-        dsn='dbname=interviewroulettedb user=jb12459 password=master12459omg host=inerviewroulletedb.cyj8bhtufy5o.us-east-1.rds.amazonaws.com port=5432',
+        dsn='dbname=interviewroulettedb user=jb12459 password='+dbpassword+' host=inerviewroulletedb.cyj8bhtufy5o.us-east-1.rds.amazonaws.com port=5432',
         size=1,
         ioloop=ioloop
     )

@@ -2,7 +2,10 @@
 import json
 import os
 import time
-import momoko
+
+#database imports
+import psycopg2 #python+postrgres
+import momoko #wrapper for psycopg2
 
 import tornado.httpserver
 import tornado.ioloop
@@ -11,6 +14,7 @@ import tornado.web
 
 from tornado.options import define, options
 from tornado.escape import json_encode
+from tornado import gen
 
 # For using print() to log nicely
 from tornado.log import enable_pretty_logging
@@ -24,11 +28,21 @@ class MainHandler(tornado.web.RequestHandler):
     def get(self):
         self.redirect('/index.html')
 
-class GetInterviews(tornado.web.RequestHandler):
+class BaseHandler(tornado.web.RequestHandler):
+    @property
+    def db(self):
+        return self.application.db
+
+class GetInterviews(BaseHandler):
+    @gen.coroutine
     def get(self):
         interviews = [];
         with open('examplejson/video.json') as data_file:    
             interviews = json.load(data_file)
+
+        cursor = yield self.db.execute("SELECT * FROM users;")
+        print(cursor.fetchall())
+
 
         self.write(json_encode(interviews))
 
@@ -42,9 +56,22 @@ def main():
     ]
 
     application = tornado.web.Application(handlers)
+    ioloop = tornado.ioloop.IOLoop.current()
+
+    application.db = momoko.Pool(
+        dsn='dbname=interviewroulettedb user=jb12459 password=master12459omg host=inerviewroulletedb.cyj8bhtufy5o.us-east-1.rds.amazonaws.com port=5432',
+        size=1,
+        ioloop=ioloop
+    )
+
+    future = application.db.connect()
+    ioloop.add_future(future, lambda f: ioloop.stop())
+    ioloop.start()
+    future.result()
+
     http_server = tornado.httpserver.HTTPServer(application)
     http_server.listen(options.port)
-    tornado.ioloop.IOLoop.current().start()
+    ioloop.start()
 
 if __name__ == '__main__':
     main()

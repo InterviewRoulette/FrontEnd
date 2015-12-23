@@ -82,7 +82,7 @@ var IndividualInterview = React.createClass({
 		return (
 			<a href={"interview.html?vid="+v.vid}>
 				<div className="fourths">
-					<div className="vid_box_header">{v.vid}</div>
+					<div className="vid_box_header">{v.title}</div>
 					<div className="vid_box">
 						<img className="interview_video_thumbnail" src="images/thumbnail_template.jpg" />
 					</div>

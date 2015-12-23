@@ -36,13 +36,36 @@ class BaseHandler(tornado.web.RequestHandler):
 class GetInterviews(BaseHandler):
     @gen.coroutine
     def get(self):
+        # query database
+        cursor = yield self.db.execute("SELECT * FROM videos;")
+        results = cursor.fetchall();
+
+        # stick results in json to send to client
         interviews = [];
-        with open('examplejson/video.json') as data_file:    
-            interviews = json.load(data_file)
+        for row in results:
+            interview = {
+                "vid": row[0],
+                "title": row[1],
+                "username": "djprof", #ToDo: FIX THIS!!!
+                "video_url": row[2],
+                "audio_url": row[3],
+                "text_url": row[4],
+                "rating": row[5],
+                "thumbnail": "www.jamesburnside.com/", #ToDo: ADD THIS TO DATABASE
+                "difficulty": row[6],
+                "length": row[7],
+                "type": row[8],
+                "category": row[9],
+                "language": row[10],
+                "comments":  #ToDo: THIS AS WELL!!!
+                    [
+                        {"djprof": "Greatest interview in all existance"},
+                        {"djprof": "Me again, just rewatched it, this was so good!"},
+                        {"jb12459": "@djprof, not too bad I guess..."}
+                    ]
+                }
 
-        cursor = yield self.db.execute("SELECT * FROM users;")
-        print(cursor.fetchall())
-
+            interviews.append(interview)
 
         self.write(json_encode(interviews))
 

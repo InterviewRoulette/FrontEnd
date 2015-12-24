@@ -6,15 +6,14 @@ var Interview = React.createClass({
 
 	render: function() {
 
-		console.log(this.state.interviewdata)
+		console.log(this.state.interviewdata['title'])
 
 		return (
 			<div>
-				<h1 className="skyblue mpnew">User Interviews</h1>
 
-				<section className="white minH530">
+				<section className="white minH bluetop">
 					<div className="container">
-
+						<h1>{this.state.interviewdata.title}</h1>
 					</div>
 				</section>
 			</div>

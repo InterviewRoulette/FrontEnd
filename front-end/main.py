@@ -23,15 +23,50 @@ enable_pretty_logging()
 define("port", default=8888, help="run on the given port", type=int)
 public_root = os.path.join(os.path.dirname(__file__), 'public')
 
+def videoRowToJson(row):
+    return {
+        "vid": row[0],
+        "title": row[1],
+        "username": "djprof", #ToDo: FIX THIS!!!
+        "video_url": row[2],
+        "audio_url": row[3],
+        "text_url": row[4],
+        "rating": row[5],
+        "thumbnail": "www.jamesburnside.com/", #ToDo: ADD THIS TO DATABASE
+        "difficulty": row[6],
+        "length": row[7],
+        "type": row[8],
+        "category": row[9],
+        "language": row[10],
+        "comments":  #ToDo: THIS AS WELL!!!
+        [
+            {"djprof": "Greatest interview in all existance"},
+            {"djprof": "Me again, just rewatched it, this was so good!"},
+            {"jb12459": "@djprof, not too bad I guess..."}
+        ]
+    };
+
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
-        self.redirect('/index.html')
+        self.render('public/index.html')
+
 
 class BaseHandler(tornado.web.RequestHandler):
     @property
     def db(self):
         return self.application.db
+
+class Interview(BaseHandler):
+    @gen.coroutine
+    def get(self):
+        vid = self.get_argument('vid', True)
+        cursor = yield self.db.execute("SELECT * FROM videos WHERE vid="+vid)
+        videojson = json_encode(videoRowToJson(cursor.fetchone()))
+        print(videojson)
+
+        self.render('public/interview.html', interviewdata = videojson)
+
 
 class GetInterviews(BaseHandler):
     @gen.coroutine
@@ -43,28 +78,7 @@ class GetInterviews(BaseHandler):
         # stick results in json to send to client
         interviews = [];
         for row in results:
-            interview = {
-                "vid": row[0],
-                "title": row[1],
-                "username": "djprof", #ToDo: FIX THIS!!!
-                "video_url": row[2],
-                "audio_url": row[3],
-                "text_url": row[4],
-                "rating": row[5],
-                "thumbnail": "www.jamesburnside.com/", #ToDo: ADD THIS TO DATABASE
-                "difficulty": row[6],
-                "length": row[7],
-                "type": row[8],
-                "category": row[9],
-                "language": row[10],
-                "comments":  #ToDo: THIS AS WELL!!!
-                    [
-                        {"djprof": "Greatest interview in all existance"},
-                        {"djprof": "Me again, just rewatched it, this was so good!"},
-                        {"jb12459": "@djprof, not too bad I guess..."}
-                    ]
-                }
-
+            interview = videoRowToJson(row)
             interviews.append(interview)
 
         self.write(json_encode(interviews))
@@ -74,6 +88,7 @@ def main():
 
     handlers = [
         (r'/', MainHandler),
+        (r'/interview.html', Interview),
         (r'/api/getinterviews', GetInterviews),
         (r'/(.*)', tornado.web.StaticFileHandler, {'path': public_root}),
     ]

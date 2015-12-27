@@ -1,0 +1,129 @@
+window.InterviewArea = React.createClass({
+    propTypes: {
+        type: React.PropTypes.oneOf(["playback","record", "static"]).isRequired,
+        defaultText: React.PropTypes.string,
+    },
+
+    getInitialState() {
+        this.streamCreator = new KeyboardStreamCreator();
+        return {
+            type: this.props.type
+        }
+    },
+
+    render() {
+        return <div className="interview_area">
+                <video src="/" controls></video>
+                <InterviewTextArea ref="interviewTextArea" defaultValue={this.props.defaultText} streamCreator={this.streamCreator} />
+            </div>
+    }
+});
+
+
+var InterviewTextArea = React.createClass({
+
+    getInitialState() {
+        this.nextCursorLocation = -1;
+        return {
+            text: this.props.defaultValue || "Type your answer here",
+        }
+    },
+
+    processChange(change) {
+        var t = this.state.text;
+        var newText = this.state.text;
+        switch (change.type) {
+            case "insert":
+                newText = t.substring(0,change.location) + change.text + t.substring(change.location);
+                this.nextCursorLocation = change.location + change.text.length;
+                break;
+            case "delete":
+                if (change.location < 0)
+                    return;
+                newText = t.substring(0, change.location) + t.substring(change.location + change.length);
+                this.nextCursorLocation = change.location;
+                break;
+            default:
+                console.log("unknown change type");
+        }
+        this.setState({text: newText});
+    },
+
+    eventHandler(e) {
+        if (this.props.streamCreator != null) {
+            // sends both event and element so selections can be processed correctly
+            this.props.streamCreator.handleEvent(e, ReactDOM.findDOMNode(this), this.processChange);
+        }
+    },
+
+    componentDidUpdate() {
+        if (this.nextCursorLocation >= 0) {
+            // needed to make sure the cursor position is set after the element has been rendered,
+            // otherwise it gets inserted at the end every time the text is changed.
+            // Must use requestAnimationFrame due to the JS event loop & DOM updates being all async
+            window.requestAnimationFrame(() => {
+                if (this._ta == null)
+                    this._ta = ReactDOM.findDOMNode(this);
+                this._ta.setSelectionRange(this.nextCursorLocation, this.nextCursorLocation);
+                this.nextCursorLocation = -1;
+            });
+        }
+    },
+
+    render() {
+        return <textarea ref="textarea" onKeyDown={this.eventHandler} onKeyPress={this.eventHandler} className="coding_capture_window" value={this.state.text} />
+    }
+
+});
+
+class KeyboardStreamCreator {
+    constructor() {
+        this.stream = [];
+    }
+
+    handleEvent(e, ta, cb) {
+        console.log(e.type, e.charCode, e.keyCode, e.key);
+
+        var selection = ta.selectionEnd - ta.selectionStart > 0;
+
+        var change;
+        if (e.type == "keypress") { // good for handling text input - does not fire on backspace/modifier keys
+            var t = e.key;
+            if (e.charCode == 13)
+                t = "\n"; // otherwise it types the word "Enter", of course.
+            change = {
+                type: "insert",
+                location: ta.selectionStart,
+                text: t
+            };
+        } else if (e.type == "keydown") { // handle things like backspace etc
+            switch (e.key) {
+            case "Delete":
+            case "Backspace":
+                var loc = ta.selectionStart;
+                change = {
+                    type: "delete",
+                    location: selection || e.key == "Delete" ? ta.selectionStart : ta.selectionStart - 1,
+                    length: selection ? ta.selectionEnd - ta.selectionStart : 1
+                }
+                break;
+            case "Tab":
+                e.preventDefault();
+                change = {
+                    type: "insert",
+                    location: ta.selectionStart,
+                    text: "\t"
+                }
+                break;
+            }
+        }
+
+        if (change) {
+            cb(change);
+            change.time = window.performance.now();
+            this.stream.push(change);
+        }
+
+    }
+
+}

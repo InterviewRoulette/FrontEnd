@@ -1,6 +1,6 @@
 var InterviewApp = React.createClass({
 	getInitialState: function() {
-		return ({currentStage: 0, showAlert: false});
+		return ({currentStage: 2, showAlert: false});
 	},
 
 	nextStage: function() {
@@ -25,7 +25,7 @@ var InterviewApp = React.createClass({
 			case 4: component = (<NewQuestion nextStage={this.nextStage}/>);break;
 			case 5: component = (<Finalizing nextStage={this.nextStage}/>);break;
 			case 6: component = (<Finished nextStage={this.nextStage}/>);break;
-			
+
 			default: this.setState({currentStage: 0});
 		}
 
@@ -35,7 +35,7 @@ var InterviewApp = React.createClass({
 				{this.state.showAlert ? <Alert close={this.closeAlert}/> : null}
 			</div>
 		);
-			
+
 	}
 });
 
@@ -76,7 +76,8 @@ var NewQuestion = React.createClass({
 		return (
 			<section className="white bluetop minH">
 				<div className="container">
-					<h1>Question #</h1>
+					<h1>Question #1</h1>
+                    <InterviewArea type="record"/>
 					<div className="tc">
 						<div onClick={this.props.nextStage} className="button">Manual Continue</div>
 					</div>
@@ -111,10 +112,7 @@ var InterviewReview = React.createClass({
 					<h1>All set to begin!</h1>
 					<br />
 					<br />
-					<div>
-						<video src="/" className="video_capture_window" controls></video>
-						<textarea className="coding_capture_window" defaultValue="#include <stdlib.c>&#13;&#13;int main(int argc, char **argv)&#13;{&#13;&nbsp;&nbsp;&nbsp;&nbsp;printf('hello world\n');&#13;&#13;&nbsp;&nbsp;&nbsp;&nbsp;return 0;&#13;}"/>
-					</div>
+                    <InterviewArea type="record"/>
 					<br />
 					<div className="further_instructions">
 						<ul>
@@ -148,7 +146,7 @@ var InterviewDetails = React.createClass({
 							<tbody>
 								<tr className="interview_choice">
 									<td>
-										<h4>Choose interview catagory:</h4> 
+										<h4>Choose interview catagory:</h4>
 									</td>
 									<td>
 										<select>
@@ -161,7 +159,7 @@ var InterviewDetails = React.createClass({
 								</tr>
 								<tr className="interview_choice">
 									<td>
-										<h4>Choose interview language:</h4> 
+										<h4>Choose interview language:</h4>
 									</td>
 									<td>
 										<select>
@@ -176,7 +174,7 @@ var InterviewDetails = React.createClass({
 							</tbody>
 						</table>
 
-						<h4>Choose interview difficulty:</h4> 
+						<h4>Choose interview difficulty:</h4>
 						<div className="option_button ml70 option_button_selected">easy</div>
 						<div className="option_button" onClick={this.props.showAlert}>medium</div>
 						<div className="option_button" onClick={this.props.showAlert}>hard</div>
@@ -184,7 +182,7 @@ var InterviewDetails = React.createClass({
 						<br />
 						<br />
 
-						<h4>Choose interview length:</h4> 
+						<h4>Choose interview length:</h4>
 						<div className="option_button ml70" onClick={this.props.showAlert}>15mins</div>
 						<div className="option_button" onClick={this.props.showAlert}>30mins</div>
 						<div className="option_button option_button_selected">1hour</div>
@@ -192,14 +190,14 @@ var InterviewDetails = React.createClass({
 						<br />
 						<br />
 
-						<h4>Choose recording type:</h4> 
+						<h4>Choose recording type:</h4>
 						<div className="option_button ml70 option_button_selected">video, audio, text</div>
 						<div className="option_button" onClick={this.props.showAlert}>audio, text</div>
 						<div className="option_button" onClick={this.props.showAlert}>text, only</div>
 						<br />
 						<br />
 
-						<h4>Finally, enter a name for your video:</h4> 
+						<h4>Finally, enter a name for your video:</h4>
 						<input className="ml70" type="text" name="video_title" placeholder="enter video name here" />
 						<br />
 						<br />
@@ -281,7 +279,7 @@ var Alert = React.createClass({
 				<div className="alert_inner">
 					<p>This feature is coming soon!</p>
 					<div onClick={this.close} className="button alert_button">Gotcha</div>
-				</div>	
+				</div>
 			</div>);
 	}
 });

@@ -2,25 +2,52 @@ window.InterviewArea = React.createClass({
     propTypes: {
         type: React.PropTypes.oneOf(["playback","record", "static"]).isRequired,
         defaultText: React.PropTypes.string,
+        id: React.PropTypes.string.isRequired
     },
 
     getInitialState() {
-        this.streamCreator = new KeyboardStreamCreator();
         return {
-            type: this.props.type
+            recording: false,
+            playing: false
         }
+    },
+
+    startRecording() {
+        this.streamCreator = new KeyboardStreamCreator();
+        window.streamCreator = this.streamCreator;
+        this.setState({recording: true});
+    },
+
+    startPlayback() {
+        this.props.stream.forEach((change) =>
+            setTimeout(() =>
+                this.refs.interviewTextArea.processChange(change)
+            , change.time)
+        );
     },
 
     render() {
         return <div className="interview_area">
                 <video src="/" controls></video>
-                <InterviewTextArea ref="interviewTextArea" defaultValue={this.props.defaultText} streamCreator={this.streamCreator} />
+                <InterviewTextArea ref="interviewTextArea" defaultValue={this.props.defaultText} streamCreator={this.streamCreator} readOnly={this.props.type !== "playback"} />
+                {(this.props.type == "record" && !this.state.recording) ?
+                    <div className="tc">
+                        <div onClick={this.startRecording} className="button">Start Recording</div>
+                    </div> : (this.props.type == "playback" && !this.state.playing) ?
+                    <div className="tc">
+                        <div onClick={this.startPlayback} className="button">Start Playback</div>
+                    </div> : null}
             </div>
     }
 });
 
 
 var InterviewTextArea = React.createClass({
+    propTypes: {
+        defaultValue: React.PropTypes.string,
+        streamCreator: React.PropTypes.any,
+        readOnly: React.PropTypes.bool
+    },
 
     getInitialState() {
         this.nextCursorLocation = -1;
@@ -71,7 +98,7 @@ var InterviewTextArea = React.createClass({
     },
 
     render() {
-        return <textarea ref="textarea" onKeyDown={this.eventHandler} onKeyPress={this.eventHandler} className="coding_capture_window" value={this.state.text} />
+        return <textarea ref="textarea" onKeyDown={this.eventHandler} onKeyPress={this.eventHandler} className="coding_capture_window" value={this.state.text} onChange={()=>{}}/>
     }
 
 });
@@ -79,11 +106,10 @@ var InterviewTextArea = React.createClass({
 class KeyboardStreamCreator {
     constructor() {
         this.stream = [];
+        this.startTime = Date.now();
     }
 
     handleEvent(e, ta, cb) {
-        console.log(e.type, e.charCode, e.keyCode, e.key);
-
         var selection = ta.selectionEnd - ta.selectionStart > 0;
 
         var change;
@@ -99,8 +125,7 @@ class KeyboardStreamCreator {
         } else if (e.type == "keydown") { // handle things like backspace etc
             switch (e.key) {
             case "Delete":
-            case "Backspace":
-                var loc = ta.selectionStart;
+            case "Backspace": // TODO: support backspace whilst holding "alt" for word removal
                 change = {
                     type: "delete",
                     location: selection || e.key == "Delete" ? ta.selectionStart : ta.selectionStart - 1,
@@ -120,10 +145,11 @@ class KeyboardStreamCreator {
 
         if (change) {
             cb(change);
-            change.time = window.performance.now();
+            change.time = Date.now()-this.startTime;
             this.stream.push(change);
         }
 
     }
 
 }
+window.KeyboardStreamCreator = KeyboardStreamCreator;

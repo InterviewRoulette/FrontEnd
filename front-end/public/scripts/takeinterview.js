@@ -21,8 +21,11 @@ var InterviewApp = React.createClass({
 			case 0: component = (<InterviewInstructions showAlert={this.showAlert} nextStage={this.nextStage}/>); break;
 			case 1: component = (<InterviewDetails showAlert={this.showAlert} nextStage={this.nextStage}/>); break;
 			case 2: component = (<InterviewReview showAlert={this.showAlert} nextStage={this.nextStage}/>); break;
-			case 3: component = (<PreparingInterview nextStage={this.nextStage}/>); break;
-			case 4: component = (<NewQuestion nextStage={this.nextStage}/>);break;
+			case 3:
+			    this.stream = window.streamCreator.stream;
+			    component = (<PreparingInterview nextStage={this.nextStage}/>);
+			    break;
+			case 4: component = (<NewQuestion nextStage={this.nextStage} stream={this.stream}/>);break;
 			case 5: component = (<Finalizing nextStage={this.nextStage}/>);break;
 			case 6: component = (<Finished nextStage={this.nextStage}/>);break;
 
@@ -77,7 +80,7 @@ var NewQuestion = React.createClass({
 			<section className="white bluetop minH">
 				<div className="container">
 					<h1>Question #1</h1>
-                    <InterviewArea type="record"/>
+                    <InterviewArea type="playback" id="someid" stream={this.props.stream}/>
 					<div className="tc">
 						<div onClick={this.props.nextStage} className="button">Manual Continue</div>
 					</div>
@@ -112,7 +115,7 @@ var InterviewReview = React.createClass({
 					<h1>All set to begin!</h1>
 					<br />
 					<br />
-                    <InterviewArea type="record"/>
+                    <InterviewArea type="record" id="someid"/>
 					<br />
 					<div className="further_instructions">
 						<ul>

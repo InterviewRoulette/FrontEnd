@@ -6,6 +6,7 @@ import time
 #database imports
 import psycopg2 #python+postrgres
 import momoko #wrapper for psycopg2
+import redis #for storing the text stuff
 
 import tornado.httpserver
 import tornado.ioloop
@@ -97,12 +98,16 @@ def main():
     ioloop = tornado.ioloop.IOLoop.current()
 
     dbpassword = os.environ.get('DATABASEPASSWORD')
+    redishost = os.environ.get('REDISHOST')
 
     application.db = momoko.Pool(
         dsn='dbname=interviewroulettedb user=jb12459 password='+dbpassword+' host=inerviewroulletedb.cyj8bhtufy5o.us-east-1.rds.amazonaws.com port=5432',
         size=1,
         ioloop=ioloop
     )
+
+    r = redis.StrictRedis(host=redishost, port=6379, db=0)
+    r.rpush("test", "val")
 
     future = application.db.connect()
     ioloop.add_future(future, lambda f: ioloop.stop())

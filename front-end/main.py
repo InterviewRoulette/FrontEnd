@@ -12,6 +12,7 @@ import tornado.httpserver
 import tornado.ioloop
 import tornado.options
 import tornado.web
+import tornado.websocket
 
 from tornado.options import define, options
 from tornado.escape import json_encode
@@ -84,6 +85,21 @@ class GetInterviews(BaseHandler):
 
         self.write(json_encode(interviews))
 
+class AddInterview(BaseHandler):
+    @gen.coroutine
+    def post(self):
+        self.write("lol u got mail m8")
+
+class RecordInterviewText(tornado.websocket.WebSocketHandler):
+    def open(self):
+        print("websocket open")
+
+    def on_message(self, message):
+        self.write_message(u"lol ur talking crap:"+message)
+
+    def on_close(self):
+        print("bai sockets")
+
 def main():
     tornado.options.parse_command_line()
 
@@ -91,6 +107,8 @@ def main():
         (r'/', MainHandler),
         (r'/interview.html', Interview),
         (r'/api/getinterviews', GetInterviews),
+        (r'/api/interviews/add', AddInterview),
+        (r'/api/interviews/record', RecordInterviewText),
         (r'/(.*)', tornado.web.StaticFileHandler, {'path': public_root}),
     ]
 
@@ -107,7 +125,6 @@ def main():
     )
 
     r = redis.StrictRedis(host=redishost, port=6379, db=0)
-    r.rpush("test", "val")
 
     future = application.db.connect()
     ioloop.add_future(future, lambda f: ioloop.stop())

@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title></title>
+	<title>IR - Testing</title>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://cdn.webrtc-experiment.com/MediaStreamRecorder.js"></script>
 </head>
 <body>
 
@@ -32,7 +34,46 @@
 		<video id="camera-stream" width="500" controls autoplay></video>
 	</div>
 
+
+	<video src="../../output.webm" id="testervideo" width="500" controls autoplay></video>
+
+
 	<script>
+
+		function tellServerInterviewStarted() {
+			$.ajax({
+				type: 'POST',
+				url: '/api/blobpiece/started',
+				data: 'username-videotitle'
+			});
+		}
+
+		function sendBlobToServer(blob) {
+			$.ajax({
+				type: 'POST',
+				url: '/api/blobpiece/video',
+				data: blob.video,
+				processData: false,
+				contentType: false
+			});
+
+			$.ajax({
+				type: 'POST',
+				url: '/api/blobpiece/audio',
+				data: blob.audio,
+				processData: false,
+				contentType: false
+			});
+		}
+
+		function tellServerWeFinished() {
+			$.ajax({
+				type: 'POST',
+				url: '/api/blobpiece/finished',
+				data: 'username-videotitle'
+			});
+		}
+
 		window.onload = function() {
 
 			// Normalize the various vendor prefixed versions of getUserMedia.
@@ -48,17 +89,36 @@
 				navigator.getUserMedia(
 					// Constraints
 					{
-						video: true
+						video: true,
+						audio: true
 					},
 
 					// Success Callback
 					function(localMediaStream) {
+
 						// Get a reference to the video element on the page.
 						var vid = document.getElementById('camera-stream');
 
 						// Create an object URL for the video stream and use this 
 						// to set the video source.
 						vid.src = window.URL.createObjectURL(localMediaStream);
+
+
+						var multiStreamRecorder = new MultiStreamRecorder(localMediaStream);
+						multiStreamRecorder.video = vid;
+						multiStreamRecorder.audioChannels = 1;
+
+    					multiStreamRecorder.ondataavailable = function (blobs) {
+							sendBlobToServer(blobs)
+					    };
+
+					    tellServerInterviewStarted();
+					    multiStreamRecorder.start(3000);
+
+						setTimeout(function() {
+							multiStreamRecorder.stop()
+							tellServerWeFinished()
+						}, 15*1000);
 					},
 
 					// Error Callback

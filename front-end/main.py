@@ -2,6 +2,7 @@
 import json
 import os
 import time
+import subprocess
 
 #database imports
 import psycopg2 #python+postrgres
@@ -11,6 +12,7 @@ import tornado.httpserver
 import tornado.ioloop
 import tornado.options
 import tornado.web
+import tornado.websocket
 
 from tornado.options import define, options
 from tornado.escape import json_encode
@@ -67,6 +69,43 @@ class Interview(BaseHandler):
 
         self.render('public/interview.html', interviewdata = videojson)
 
+class VideoHandler(BaseHandler):
+    def post(self):
+        video_blob = self.request.body
+        videofilename = 'video_'+str(int(time.time()))+'.webm'
+        directory = os.path.join('username-videotitle')
+
+        with open(directory+"/video_list.txt", "a") as myfile:
+            myfile.write("file '"+videofilename+"'\n")
+
+        f = open(directory+'/'+videofilename, 'w')
+        f.write(video_blob)
+
+class AudioHandler(BaseHandler):
+    def post(self):
+        audio_blob = self.request.body
+        directory = os.path.join('username-videotitle')
+        audiofilename = 'audio_'+str(int(time.time()))+'.webm'
+
+        with open(directory+"/audio_list.txt", "a") as myfile:
+            myfile.write("file '"+audiofilename+"'\n")
+
+        f = open(directory+'/'+audiofilename, 'w')
+        f.write(audio_blob)
+
+class HelloHandler(BaseHandler):
+    def post(self):
+        print("Hello - let's start recording our interview")
+        directory = self.request.body
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+class GoodbyeHandler(BaseHandler):
+    def post(self):
+        print("Goodbye - lets mergy the video")
+        directory = self.request.body
+        videotxtfile = os.path.join('username-videotitle/video_list.txt')
+        subprocess.call('ffmpeg -f concat -i '+videotxtfile+' -c copy output.webm', shell=True);
 
 class GetInterviews(BaseHandler):
     @gen.coroutine
@@ -90,13 +129,17 @@ def main():
         (r'/', MainHandler),
         (r'/interview.html', Interview),
         (r'/api/getinterviews', GetInterviews),
+        (r'/api/blobpiece/video', VideoHandler),
+        (r'/api/blobpiece/audio', AudioHandler),
+        (r'/api/blobpiece/started', HelloHandler),
+        (r'/api/blobpiece/finished', GoodbyeHandler),
         (r'/(.*)', tornado.web.StaticFileHandler, {'path': public_root}),
     ]
 
     application = tornado.web.Application(handlers)
     ioloop = tornado.ioloop.IOLoop.current()
 
-    dbpassword = os.environ.get('DATABASEPASSWORD')
+    dbpassword = 'master12459omg'#os.environ.get('DATABASEPASSWORD')
 
     application.db = momoko.Pool(
         dsn='dbname=interviewroulettedb user=jb12459 password='+dbpassword+' host=inerviewroulletedb.cyj8bhtufy5o.us-east-1.rds.amazonaws.com port=5432',
@@ -109,10 +152,10 @@ def main():
     ioloop.start()
     future.result()
 
-    http_server = tornado.httpserver.HTTPServer(application, ssl_options={
-        "certfile": os.path.join("cert.pem"),
-        "keyfile": os.path.join("key.pem")
-    })
+    http_server = tornado.httpserver.HTTPServer(application)#, ssl_options={
+        #"certfile": os.path.join("cert.pem"),
+        #"keyfile": os.path.join("key.pem")
+    #})
     http_server.listen(options.port)
     ioloop.start()
 

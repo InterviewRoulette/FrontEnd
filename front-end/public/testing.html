@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+
+    <!--  <div>
+        <video id="videoPlayer" controls="true"></video>
+     </div>
+
+	<script src="http://cdn.dashjs.org/latest/dash.all.js"></script>
+     <script>
+        (function(){
+
+           var url = "http://dash.edgesuite.net/akamai/test/caption_test/ElephantsDream/elephants_dream_480p_heaac5_1.mpd";
+
+           var context = new Dash.di.DashContext();
+
+           var player = new MediaPlayer(context);
+
+           player.startup();
+
+           player.attachView(document.querySelector("#videoPlayer"));
+
+           player.attachSource(url);
+
+        })();
+     </script> -->
+
+     <div id="video-container">
+		<video id="camera-stream" width="500" controls autoplay></video>
+	</div>
+
+	<script>
+		window.onload = function() {
+
+			// Normalize the various vendor prefixed versions of getUserMedia.
+			navigator.getUserMedia = (navigator.getUserMedia ||
+									  navigator.webkitGetUserMedia ||
+									  navigator.mozGetUserMedia || 
+									  navigator.msGetUserMedia);
+
+			// Check that the browser supports getUserMedia.
+			// If it doesn't show an alert, otherwise continue.
+			if (navigator.getUserMedia) {
+				// Request the camera.
+				navigator.getUserMedia(
+					// Constraints
+					{
+						video: true
+					},
+
+					// Success Callback
+					function(localMediaStream) {
+						// Get a reference to the video element on the page.
+						var vid = document.getElementById('camera-stream');
+
+						// Create an object URL for the video stream and use this 
+						// to set the video source.
+						vid.src = window.URL.createObjectURL(localMediaStream);
+					},
+
+					// Error Callback
+					function(err) {
+						// Log the error to the console.
+						console.log('The following error occurred when trying to use getUserMedia: ' + err);
+					}
+				);
+
+			} else {
+				alert('Sorry, your browser does not support getUserMedia');
+			}
+		}
+	</script>
+</body>
+</html>

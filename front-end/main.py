@@ -109,7 +109,10 @@ def main():
     ioloop.start()
     future.result()
 
-    http_server = tornado.httpserver.HTTPServer(application)
+    http_server = tornado.httpserver.HTTPServer(application, ssl_options={
+        "certfile": os.path.join("cert.pem"),
+        "keyfile": os.path.join("key.pem")
+    })
     http_server.listen(options.port)
     ioloop.start()
 

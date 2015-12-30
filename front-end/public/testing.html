@@ -35,10 +35,12 @@
 	</div>
 
 
-	<video src="../../output.webm" id="testervideo" width="500" controls autoplay></video>
+	<video src="outputs/username-videotitle.webm" id="testervideo" width="500" controls autoplay></video>
 
 
 	<script>
+
+		var lastone = false;
 
 		function tellServerInterviewStarted() {
 			$.ajax({
@@ -49,12 +51,16 @@
 		}
 
 		function sendBlobToServer(blob) {
+			var isLastOne = lastone;
 			$.ajax({
 				type: 'POST',
 				url: '/api/blobpiece/video',
 				data: blob.video,
 				processData: false,
 				contentType: false
+			}).done(function(data) {
+				if(isLastOne)
+					tellServerWeFinished()
 			});
 
 			$.ajax({
@@ -71,6 +77,10 @@
 				type: 'POST',
 				url: '/api/blobpiece/finished',
 				data: 'username-videotitle'
+			}).done(function(data) {
+				var vid = document.getElementById('testervideo');
+				vid.src = "outputs/username-videotitle.webm";
+				vid.load();
 			});
 		}
 
@@ -116,8 +126,8 @@
 					    multiStreamRecorder.start(3000);
 
 						setTimeout(function() {
+							lastone = true;
 							multiStreamRecorder.stop()
-							tellServerWeFinished()
 						}, 15*1000);
 					},
 

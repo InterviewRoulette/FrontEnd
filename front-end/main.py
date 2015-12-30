@@ -3,6 +3,7 @@ import json
 import os
 import time
 import subprocess
+import shutil
 
 #database imports
 import psycopg2 #python+postrgres
@@ -48,6 +49,8 @@ def videoRowToJson(row):
         ]
     };
 
+def remove_directory(directory):
+    shutil.rmtree(directory)
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
@@ -69,22 +72,28 @@ class Interview(BaseHandler):
 
         self.render('public/interview.html', interviewdata = videojson)
 
+writing = False
 class VideoHandler(BaseHandler):
     def post(self):
         video_blob = self.request.body
         videofilename = 'video_'+str(int(time.time()))+'.webm'
-        directory = os.path.join('username-videotitle')
+        directory = os.path.join('intermediates/username-videotitle')
 
         with open(directory+"/video_list.txt", "a") as myfile:
             myfile.write("file '"+videofilename+"'\n")
 
+        writing = True
         f = open(directory+'/'+videofilename, 'w')
         f.write(video_blob)
+        writing = False
+
+        print("video written assuming f.write is blocking")
+        self.write('done f write')
 
 class AudioHandler(BaseHandler):
     def post(self):
         audio_blob = self.request.body
-        directory = os.path.join('username-videotitle')
+        directory = os.path.join('intermediates/username-videotitle')
         audiofilename = 'audio_'+str(int(time.time()))+'.webm'
 
         with open(directory+"/audio_list.txt", "a") as myfile:
@@ -96,16 +105,22 @@ class AudioHandler(BaseHandler):
 class HelloHandler(BaseHandler):
     def post(self):
         print("Hello - let's start recording our interview")
-        directory = self.request.body
-        if not os.path.exists(directory):
-            os.makedirs(directory)
+        directory = os.path.join('intermediates/'+self.request.body)
+
+        if os.path.exists(directory):
+            remove_directory(directory)
+
+        os.makedirs(directory)
 
 class GoodbyeHandler(BaseHandler):
     def post(self):
         print("Goodbye - lets mergy the video")
-        directory = self.request.body
-        videotxtfile = os.path.join('username-videotitle/video_list.txt')
-        subprocess.call('ffmpeg -f concat -i '+videotxtfile+' -c copy output.webm', shell=True);
+        intermediatedirectory = os.path.join('intermediates/'+self.request.body)
+        videotxtfile = intermediatedirectory+'/video_list.txt'
+        subprocess.call('ffmpeg -f concat -i '+videotxtfile+' -c copy front-end/public/outputs/username-title.webm', shell=True);
+        print("ffmpeg finished to file assuming subprocess.call is blocking")
+        self.write('done ffmpeg')
+
 
 class GetInterviews(BaseHandler):
     @gen.coroutine

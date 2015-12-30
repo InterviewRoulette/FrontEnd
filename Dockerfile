@@ -1,4 +1,4 @@
-FROM ubuntu:12.04
+FROM cellofellow/ffmpeg
 
 RUN apt-get update
 RUN apt-get -y install sudo
@@ -10,6 +10,7 @@ RUN apt-get -y build-dep python-psycopg2
 # Install pip
 RUN easy_install pip
 RUN pip install momoko redis
+
 
 # Add files
 ADD /front-end /front-end

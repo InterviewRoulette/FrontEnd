@@ -50,7 +50,12 @@ window.InterviewArea = React.createClass({
 var InterviewVideoArea = React.createClass({
 
     getInitialState: function() {
-        return ({vid_src: "", multiStreamRecorder:null});
+        return ({
+            vid_src: "", 
+            multiStreamRecorder:null,
+            blob_no:0,
+            video_title: 'vid_0002'
+        });
     },
 
     componentDidMount: function() {
@@ -58,9 +63,10 @@ var InterviewVideoArea = React.createClass({
     },
 
     sendBlobToServer: function(blob) {
+
         $.ajax({
             type: 'POST',
-            url: '/api/blobpiece/video',
+            url: '/api/interviews/blobpiece/video',
             data: blob.video,
             processData: false,
             contentType: false
@@ -68,21 +74,39 @@ var InterviewVideoArea = React.createClass({
 
         $.ajax({
             type: 'POST',
-            url: '/api/blobpiece/audio',
+            url: '/api/interviews/blobpiece/audio',
             data: blob.audio,
             processData: false,
             contentType: false
         });
+
+        this.setState({blob_no: this.state.blob_no+1})
+    },
+
+    tellServerInterviewStarted: function() {
+        $.ajax({
+            type: 'POST',
+            url: '/api/interviews/blobpiece/started',
+            data: JSON.stringify({username: 'djprof', title: this.state.video_title})
+        });
+    },
+
+    tellServerInterviewStopped: function() {
+        $.ajax({
+            type: 'POST',
+            url: '/api/interviews/blobpiece/finished',
+            data: JSON.stringify({username: 'djprof', no_of_blobs: this.state.blob_no})
+        });
     },
 
     startRecording: function() {
-        //tellServerInterviewStarted();
-        multiStreamRecorder.start(3000); //3000 is blob interval time
+        this.tellServerInterviewStarted();
+        this.state.multiStreamRecorder.start(3000); //3000 is blob interval time
     },
 
     stopRecording: function() {
-        multiStreamRecorder.stop()
-        //tellServerInterviewStopped();
+        this.state.multiStreamRecorder.stop()
+        this.tellServerInterviewStopped();
     },
 
     getFeed: function() {
@@ -119,6 +143,7 @@ var InterviewVideoArea = React.createClass({
                     };
 
                     thee.setState({multiStreamRecorder: newmultiStreamRecorder})
+                    // thee.startRecording();
                 },
 
                 // Error Callback

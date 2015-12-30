@@ -126,7 +126,13 @@ class TextRecorder(RecordingHandler):
 
     def message(self, message):
         print("sending " + self.interviewid + " " + message + " to redis ")
-        self.application.redis.rpush("interview:"+self.interviewid, message)
+        self.application.redis.rpush("text:"+self.interviewid, message)
+
+# merges audio and video only if they're both complete - this info is stored in redis
+def check_merge_av(r, i):
+    if r.get("video:"+i) == "true" and r.get("audio:"+i) == "true":
+        print("merging video and audio files")
+        subprocess.call("ffmpeg -nostdin -i intermediates/%s_audio.wav -i intermediates/%s_video.webm -c:a libvorbis -c:v copy -shortest public/outputs/%s.webm" % (i,i,i), shell=True)
 
 class VideoRecorder(RecordingHandler):
     name = "video"
@@ -144,7 +150,9 @@ class VideoRecorder(RecordingHandler):
     def on_close(self):
         print("video recording stopped, merging files")
         i = self.interviewid
-        subprocess.call("ffmpeg -nostdin -f concat -i intermediates/%s_video.txt -c copy public/outputs/%s_video.webm" % (i,i), shell=True)
+        subprocess.call("ffmpeg -nostdin -f concat -i intermediates/%s_video.txt -c copy intermediates/%s_video.webm" % (i,i), shell=True)
+        self.application.redis.set("video:"+i, "true")
+        check_merge_av(self.application.redis, i)
 
 class AudioRecorder(RecordingHandler):
     name = "audio"
@@ -163,7 +171,9 @@ class AudioRecorder(RecordingHandler):
     def on_close(self):
         print("audio recording stopped, merging files")
         i = self.interviewid
-        subprocess.call("ffmpeg -nostdin -f concat -i intermediates/%s_audio.txt -c copy public/outputs/%s_audio.wav" % (i,i), shell=True)
+        subprocess.call("ffmpeg -nostdin -f concat -i intermediates/%s_audio.txt -c copy intermediates/%s_audio.wav" % (i,i), shell=True)
+        self.application.redis.set("audio:"+i, "true")
+        check_merge_av(self.application.redis, i)
 
 def main():
     tornado.options.parse_command_line()

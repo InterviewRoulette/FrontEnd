@@ -30,6 +30,7 @@ window.InterviewArea = React.createClass({
                 this.refs.interviewTextArea.processChange(change)
             , change.time)
         );
+        this.refs.playback.play();
         this.setState({playing: true});
     },
 
@@ -44,7 +45,14 @@ window.InterviewArea = React.createClass({
     },
 
     render() {
-        var videoarea = this.props.type == "record" ? <InterviewVideoArea ref="interviewVideoArea" id={this.props.id} recording={this.state.recording} /> : <video src="/" id="camera-stream" className="video_capture_window"></video>
+        var videoarea;
+
+        if (this.props.type=="record") {
+            videoarea = <InterviewVideoArea ref="interviewVideoArea" id={this.props.id} recording={this.state.recording} />
+        } else {
+            videoarea = <video ref="playback" src={`/outputs/${this.props.id}.webm`} id="camera-stream" className="video_capture_window"></video>
+        }
+
         var button;
         switch(this.props.type) {
             case "playback":

@@ -28,7 +28,7 @@ window.InterviewArea = React.createClass({
 
     render() {
         return <div className="interview_area">
-                <video src="/" controls></video>
+                <InterviewVideoArea />
                 <InterviewTextArea ref="interviewTextArea" defaultValue={this.props.defaultText} streamCreator={this.streamCreator} readOnly={this.props.type !== "playback"} />
                 {(this.props.type == "record" && !this.state.recording) ?
                     <div className="tc">
@@ -38,6 +38,98 @@ window.InterviewArea = React.createClass({
                         <div onClick={this.startPlayback} className="button">Start Playback</div>
                     </div> : null}
             </div>
+    }
+});
+
+
+var InterviewVideoArea = React.createClass({
+
+    getInitialState: function() {
+        return ({vid_src: "", multiStreamRecorder:null});
+    },
+
+    componentDidMount: function() {
+        this.getFeed()
+    },
+
+    sendBlobToServer: function(blob) {
+        $.ajax({
+            type: 'POST',
+            url: '/api/blobpiece/video',
+            data: blob.video,
+            processData: false,
+            contentType: false
+        });
+
+        $.ajax({
+            type: 'POST',
+            url: '/api/blobpiece/audio',
+            data: blob.audio,
+            processData: false,
+            contentType: false
+        });
+    },
+
+    startRecording: function() {
+        //tellServerInterviewStarted();
+        multiStreamRecorder.start(3000); //3000 is blob interval time
+    },
+
+    stopRecording: function() {
+        multiStreamRecorder.stop()
+        //tellServerInterviewStopped();
+    },
+
+    getFeed: function() {
+        var thee = this;
+        // Normalize the various vendor prefixed versions of getUserMedia.
+        navigator.getUserMedia = (navigator.getUserMedia ||
+                                  navigator.webkitGetUserMedia ||
+                                  navigator.mozGetUserMedia || 
+                                  navigator.msGetUserMedia);
+
+        // Check that the browser supports getUserMedia.
+        // If it doesn't show an alert, otherwise continue.
+        if (navigator.getUserMedia) {
+            // Request the camera.
+            navigator.getUserMedia(
+                // Constraints
+                {
+                    video: true,
+                    audio: true
+                },
+
+                // Success Callback
+                function(localMediaStream) {
+
+                    // Create an object URL for the video stream and use this 
+                    // to set the video source.
+                    var sauce = window.URL.createObjectURL(localMediaStream);
+                    thee.setState({vid_src: sauce});
+
+                    var newmultiStreamRecorder = new MultiStreamRecorder(localMediaStream);
+                    newmultiStreamRecorder.audioChannels = 1;
+                    newmultiStreamRecorder.ondataavailable = function (blobs) {
+                        thee.sendBlobToServer(blobs)
+                    };
+
+                    thee.setState({multiStreamRecorder: newmultiStreamRecorder})
+                },
+
+                // Error Callback
+                function(err) {
+                    // Log the error to the console.
+                    console.log('The following error occurred when trying to use getUserMedia: ' + err);
+                }
+            )
+
+        } else {
+            alert('Sorry, your browser does not support getUserMedia');
+        }
+    },
+
+    render() {
+        return <video autoPlay id="camera-stream" className="video_capture_window" src={this.state.vid_src} controls></video>
     }
 });
 

@@ -129,7 +129,7 @@ var InterviewVideoArea = React.createClass({
     },
 
     render() {
-        return <video autoPlay id="camera-stream" className="video_capture_window" src={this.state.vid_src} controls></video>
+        return <video muted autoPlay id="camera-stream" className="video_capture_window" src={this.state.vid_src} controls></video>
     }
 });
 

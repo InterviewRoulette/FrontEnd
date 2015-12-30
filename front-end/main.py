@@ -57,14 +57,6 @@ class MainHandler(tornado.web.RequestHandler):
 
 
 class BaseHandler(tornado.web.RequestHandler):
-    # URGHHH cant pass these with the blob data so just setting
-    # as global variables, can't do multiple interviews tho then
-    # will he really test that? maybe...
-    username = ""
-    interview_title = ""
-    v_blob_count = 0
-    a_blob_count = 0
-
     @property
     def db(self):
         return self.application.db
@@ -72,6 +64,11 @@ class BaseHandler(tornado.web.RequestHandler):
 class RecordingHandler(tornado.websocket.WebSocketHandler):
     interviewid = ""
     name = "blank"
+
+    @property
+    def redis(self):
+        return self.application.redis
+
 
     def open(self):
         print("opened " + self.name + " websocket")
@@ -126,13 +123,14 @@ class TextRecorder(RecordingHandler):
 
     def message(self, message):
         print("sending " + self.interviewid + " " + message + " to redis ")
-        self.application.redis.rpush("text:"+self.interviewid, message)
+        self.redis.rpush("text:"+self.interviewid, message)
 
 # merges audio and video only if they're both complete - this info is stored in redis
 def check_merge_av(r, i):
     if r.get("video:"+i) == "true" and r.get("audio:"+i) == "true":
         print("merging video and audio files")
         subprocess.call("ffmpeg -nostdin -i intermediates/%s_audio.wav -i intermediates/%s_video.webm -c:a libvorbis -c:v copy -shortest public/outputs/%s.webm" % (i,i,i), shell=True)
+
 
 class VideoRecorder(RecordingHandler):
     name = "video"
@@ -151,8 +149,8 @@ class VideoRecorder(RecordingHandler):
         print("video recording stopped, merging files")
         i = self.interviewid
         subprocess.call("ffmpeg -nostdin -f concat -i intermediates/%s_video.txt -c copy intermediates/%s_video.webm" % (i,i), shell=True)
-        self.application.redis.set("video:"+i, "true")
-        check_merge_av(self.application.redis, i)
+        self.redis.set("video:"+i, "true")
+        check_merge_av(self.redis, i)
 
 class AudioRecorder(RecordingHandler):
     name = "audio"
@@ -172,8 +170,8 @@ class AudioRecorder(RecordingHandler):
         print("audio recording stopped, merging files")
         i = self.interviewid
         subprocess.call("ffmpeg -nostdin -f concat -i intermediates/%s_audio.txt -c copy intermediates/%s_audio.wav" % (i,i), shell=True)
-        self.application.redis.set("audio:"+i, "true")
-        check_merge_av(self.application.redis, i)
+        self.rds.set("audio:"+i, "true")
+        check_merge_av(self.redis, i)
 
 def main():
     tornado.options.parse_command_line()

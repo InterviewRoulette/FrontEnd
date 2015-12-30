@@ -117,15 +117,12 @@ class VideoHandler(BaseHandler):
         directory = os.path.join('intermediates/'+BaseHandler.username)
 
         #txt file with all blobs in it
-        with open(directory+"/video_list.txt", "a") as f:
+        with open(directory+"/"+interview_title+".txt", "a") as f:
             f.write("file '"+videofilename+"'\n")
 
         #write blob to file
         f = open(directory+'/'+videofilename, 'w')
         f.write(blob)
-
-        #merge with previous ones
-        subprocess.call("ffmpeg -f concat -i file '"+directory+"/"+videofilename+"' -c copy front-end/public/outputs/username-title.webm", shell=True);
 
         #inc blob count
         BaseHandler.v_blob_count+=1
@@ -137,12 +134,12 @@ class AudioHandler(BaseHandler):
         audiofilename = BaseHandler.interview_title+'_'+str(BaseHandler.a_blob_count)+'.webm'
         directory = os.path.join('intermediates/'+BaseHandler.username)
 
-        with open(directory+"/video_list.txt", "a") as f:
+        with open(directory+"/"+interview_title+".txt", "a") as f:
             f.write("file '"+audiofilename+"'\n")
 
         f = open(directory+'/'+audiofilename, 'w')
         f.write(blob)
-        
+
         BaseHandler.a_blob_count+=1
 
 class HelloHandler(BaseHandler):
@@ -158,13 +155,10 @@ class HelloHandler(BaseHandler):
 
 class GoodbyeHandler(BaseHandler):
     def post(self):
-        print("Goodbye Handler called")
-        # print("Goodbye - lets mergy the video")
-        # intermediatedirectory = os.path.join('intermediates/'+self.request.body)
-        # videotxtfile = intermediatedirectory+'/video_list.txt'
-        # subprocess.call('ffmpeg -f concat -i '+videotxtfile+' -c copy front-end/public/outputs/username-title.webm', shell=True);
-        # print("ffmpeg finished to file assuming subprocess.call is blocking")
-        # self.write('done ffmpeg')
+        print("Goodbye - lets mergy the video")
+        intermediatedirectory = os.path.join('intermediates/'+BaseHandler.username+'/')
+        videotxtfile = intermediatedirectory+'/'+BaseHandler.interview_title+'.txt'
+        subprocess.call('ffmpeg -f concat -i '+videotxtfile+' -c copy front-end/public/outputs/'+BaseHandler.interview_title+'.webm', shell=True);
 
 
 def main():

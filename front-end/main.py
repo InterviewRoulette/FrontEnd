@@ -2,6 +2,7 @@
 import json
 import os
 import time
+import subprocess
 
 #database imports
 import psycopg2 #python+postrgres
@@ -24,6 +25,7 @@ enable_pretty_logging()
 
 define("port", default=8888, help="run on the given port", type=int)
 public_root = os.path.join(os.path.dirname(__file__), 'public')
+
 
 def videoRowToJson(row):
     return {
@@ -55,6 +57,14 @@ class MainHandler(tornado.web.RequestHandler):
 
 
 class BaseHandler(tornado.web.RequestHandler):
+    # URGHHH cant pass these with the blob data so just setting
+    # as global variables, can't do multiple interviews tho then
+    # will he really test that? maybe...
+    username = ""
+    interview_title = ""
+    v_blob_count = 0
+    a_blob_count = 0
+
     @property
     def db(self):
         return self.application.db
@@ -100,6 +110,63 @@ class RecordInterviewText(tornado.websocket.WebSocketHandler):
     def on_close(self):
         print("bai sockets")
 
+class VideoHandler(BaseHandler):
+    def post(self):
+        blob = self.request.body
+        videofilename = BaseHandler.interview_title+'_'+str(BaseHandler.v_blob_count)+'.webm'
+        directory = os.path.join('intermediates/'+BaseHandler.username)
+
+        #txt file with all blobs in it
+        with open(directory+"/video_list.txt", "a") as f:
+            f.write("file '"+videofilename+"'\n")
+
+        #write blob to file
+        f = open(directory+'/'+videofilename, 'w')
+        f.write(blob)
+
+        #merge with previous ones
+        subprocess.call("ffmpeg -f concat -i file '"+directory+"/"+videofilename+"' -c copy front-end/public/outputs/username-title.webm", shell=True);
+
+        #inc blob count
+        BaseHandler.v_blob_count+=1
+
+class AudioHandler(BaseHandler):
+    def post(self):
+        blob = self.request.body
+
+        audiofilename = BaseHandler.interview_title+'_'+str(BaseHandler.a_blob_count)+'.webm'
+        directory = os.path.join('intermediates/'+BaseHandler.username)
+
+        with open(directory+"/video_list.txt", "a") as f:
+            f.write("file '"+audiofilename+"'\n")
+
+        f = open(directory+'/'+audiofilename, 'w')
+        f.write(blob)
+        
+        BaseHandler.a_blob_count+=1
+
+class HelloHandler(BaseHandler):
+    def post(self):
+        print("Hello - let's start recording our interview")
+        jsonstr = json.loads(self.request.body)
+        BaseHandler.username = jsonstr['username']
+        BaseHandler.interview_title = jsonstr['title']
+
+        directory = os.path.join('intermediates/'+BaseHandler.username)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+class GoodbyeHandler(BaseHandler):
+    def post(self):
+        print("Goodbye Handler called")
+        # print("Goodbye - lets mergy the video")
+        # intermediatedirectory = os.path.join('intermediates/'+self.request.body)
+        # videotxtfile = intermediatedirectory+'/video_list.txt'
+        # subprocess.call('ffmpeg -f concat -i '+videotxtfile+' -c copy front-end/public/outputs/username-title.webm', shell=True);
+        # print("ffmpeg finished to file assuming subprocess.call is blocking")
+        # self.write('done ffmpeg')
+
+
 def main():
     tornado.options.parse_command_line()
 
@@ -109,6 +176,11 @@ def main():
         (r'/api/getinterviews', GetInterviews),
         (r'/api/interviews/add', AddInterview),
         (r'/api/interviews/record', RecordInterviewText),
+
+        (r'/api/interviews/blobpiece/video', VideoHandler),
+        (r'/api/interviews/blobpiece/audio', AudioHandler),
+        (r'/api/interviews/blobpiece/started', HelloHandler),
+        (r'/api/interviews/blobpiece/finished', GoodbyeHandler),
         (r'/(.*)', tornado.web.StaticFileHandler, {'path': public_root}),
     ]
 

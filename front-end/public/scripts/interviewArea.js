@@ -13,9 +13,13 @@ window.InterviewArea = React.createClass({
     },
 
     startRecording() {
-        this.streamCreator = new KeyboardStreamCreator();
-        window.streamCreator = this.streamCreator;
-        this.setState({recording: true});
+        var ws = new WebSocket(`wss://${location.host}/api/interviews/record`);
+        ws.onopen = (evt) => {
+            ws.send(this.props.id);
+            this.streamCreator = new KeyboardStreamCreator(ws);
+            window.streamCreator = this.streamCreator;
+            this.setState({recording: true});
+        }
     },
 
     startPlayback() {
@@ -24,6 +28,7 @@ window.InterviewArea = React.createClass({
                 this.refs.interviewTextArea.processChange(change)
             , change.time)
         );
+        this.setState({playing: true});
     },
 
     render() {
@@ -85,7 +90,7 @@ var InterviewVideoArea = React.createClass({
         // Normalize the various vendor prefixed versions of getUserMedia.
         navigator.getUserMedia = (navigator.getUserMedia ||
                                   navigator.webkitGetUserMedia ||
-                                  navigator.mozGetUserMedia || 
+                                  navigator.mozGetUserMedia ||
                                   navigator.msGetUserMedia);
 
         // Check that the browser supports getUserMedia.
@@ -102,7 +107,7 @@ var InterviewVideoArea = React.createClass({
                 // Success Callback
                 function(localMediaStream) {
 
-                    // Create an object URL for the video stream and use this 
+                    // Create an object URL for the video stream and use this
                     // to set the video source.
                     var sauce = window.URL.createObjectURL(localMediaStream);
                     thee.setState({vid_src: sauce});
@@ -153,8 +158,8 @@ var InterviewTextArea = React.createClass({
         var newText = this.state.text;
         switch (change.type) {
             case "insert":
-                newText = t.substring(0,change.location) + change.text + t.substring(change.location);
-                this.nextCursorLocation = change.location + change.text.length;
+                newText = t.substring(0,change.location) + change.character + t.substring(change.location);
+                this.nextCursorLocation = change.location + 1;
                 break;
             case "delete":
                 if (change.location < 0)
@@ -196,7 +201,8 @@ var InterviewTextArea = React.createClass({
 });
 
 class KeyboardStreamCreator {
-    constructor() {
+    constructor(ws) {
+        this.ws = ws;
         this.stream = [];
         this.startTime = Date.now();
     }
@@ -205,32 +211,24 @@ class KeyboardStreamCreator {
         var selection = ta.selectionEnd - ta.selectionStart > 0;
 
         var change;
+        var time = Date.now() - this.startTime;
         if (e.type == "keypress") { // good for handling text input - does not fire on backspace/modifier keys
-            var t = e.key;
+            var c = e.key;
             if (e.charCode == 13)
-                t = "\n"; // otherwise it types the word "Enter", of course.
-            change = {
-                type: "insert",
-                location: ta.selectionStart,
-                text: t
-            };
+                c = "\n"; // otherwise it types the word "Enter", of course.
+            change = new Change("insert", ta.selectionStart, time, c);
         } else if (e.type == "keydown") { // handle things like backspace etc
             switch (e.key) {
             case "Delete":
             case "Backspace": // TODO: support backspace whilst holding "alt" for word removal
-                change = {
-                    type: "delete",
-                    location: selection || e.key == "Delete" ? ta.selectionStart : ta.selectionStart - 1,
-                    length: selection ? ta.selectionEnd - ta.selectionStart : 1
-                }
+                change = new Change("delete",
+                    selection || e.key == "Delete" ? ta.selectionStart : ta.selectionStart - 1,
+                    time,
+                    selection ? ta.selectionEnd - ta.selectionStart : 1);
                 break;
             case "Tab":
                 e.preventDefault();
-                change = {
-                    type: "insert",
-                    location: ta.selectionStart,
-                    text: "\t"
-                }
+                change = new Change("insert", ta.selectionStart, time, "\t");
                 break;
             }
         }
@@ -239,9 +237,45 @@ class KeyboardStreamCreator {
             cb(change);
             change.time = Date.now()-this.startTime;
             this.stream.push(change);
+            this.ws.send(change.toString());
         }
 
     }
 
 }
 window.KeyboardStreamCreator = KeyboardStreamCreator;
+
+class Change {
+
+    constructor(type, location, timestamp, data) {
+        this.type = type;
+        this.location = location;
+        this.timestamp = timestamp;
+        if (type == "insert") {
+            this.character = data;
+        } else {
+            this.length = data;
+        }
+    }
+
+    toString() {
+        if (this.type == "insert") {
+            return `i|${this.location}|${this.timestamp}|${this.character}`
+        } else {
+            return `d|${this.location}|${this.timestamp}|${this.length}`
+        }
+    }
+
+    static fromString(str) {
+        var strs = str.split("|");
+        var data = strs[3];
+        var type = "insert";
+        if (strs[0] == "d") {
+            type = "delete";
+            data = parseInt(data, 10);
+        }
+
+        return new Change(type, parseInt(strs[1],10), parseInt(strs[2],10), data);
+    }
+}
+

@@ -91,14 +91,19 @@ class AddInterview(BaseHandler):
         self.write("lol u got mail m8")
 
 class RecordInterviewText(tornado.websocket.WebSocketHandler):
+    interviewid = ""
     def open(self):
         print("websocket open")
 
     def on_message(self, message):
-        self.write_message(u"lol ur talking crap:"+message)
+        if self.interviewid == "":
+            print("set interview id to " + message)
+            self.interviewid = message
+        else:
+            print("would send: " + self.interviewid + " " + message + " to redis ")
 
     def on_close(self):
-        print("bai sockets")
+        print("websocket closed with id" + self.interviewid)
 
 def main():
     tornado.options.parse_command_line()

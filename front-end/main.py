@@ -152,13 +152,18 @@ class AudioRecorder(RecordingHandler):
 
     def message(self, message):
         print("%s recieved blob number %d" % (self.name, self.blob_count))
-        filename = "%s_%d_audio.webm" % (self.interviewid, self.blob_count)
+        filename = "%s_%d_audio.wav" % (self.interviewid, self.blob_count)
         with open("intermediates/%s_audio.txt" % self.interviewid, "a") as f:
             f.write("file '%s'\n" % filename)
 
         with open("intermediates/%s" % filename, "wb") as f:
             f.write(message)
         self.blob_count += 1
+
+    def on_close(self):
+        print("audio recording stopped, merging files")
+        i = self.interviewid
+        subprocess.call("ffmpeg -nostdin -f concat -i intermediates/%s_audio.txt -c copy public/outputs/%s_audio.wav" % (i,i), shell=True)
 
 def main():
     tornado.options.parse_command_line()

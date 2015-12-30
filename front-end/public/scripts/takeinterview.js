@@ -80,10 +80,7 @@ var NewQuestion = React.createClass({
 			<section className="white bluetop minH">
 				<div className="container">
 					<h1>Question #1</h1>
-                    <InterviewArea type="playback" id="someid" stream={this.props.stream}/>
-					<div className="tc">
-						<div onClick={this.props.nextStage} className="button">Manual Continue</div>
-					</div>
+                    <InterviewArea type="playback" id="someid" stream={this.props.stream} onFinish={this.props.nextStage}/>
 				</div>
 			</section>
 		);
@@ -115,18 +112,13 @@ var InterviewReview = React.createClass({
 					<h1>All set to begin!</h1>
 					<br />
 					<br />
-                    <InterviewArea type="record" id="someid"/>
+                    <InterviewArea type="record" id="someid" onFinish={this.props.nextStage}/>
 					<br />
 					<div className="further_instructions">
 						<ul>
 							<li><span>Above you can see your video capture(left) and code editor(right)</span></li>
-							<li><span>If all is working, click below to begin</span></li>
+							<li><span>If all is working, click above to begin</span></li>
 						</ul>
-					</div>
-					<br />
-					<br />
-					<div className="tc">
-						<div onClick={this.props.nextStage} className="button">Begin</div>
 					</div>
 				</div>
 			</section>

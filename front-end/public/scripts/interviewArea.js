@@ -2,7 +2,8 @@ window.InterviewArea = React.createClass({
     propTypes: {
         type: React.PropTypes.oneOf(["playback","record", "static"]).isRequired,
         defaultText: React.PropTypes.string,
-        id: React.PropTypes.string.isRequired
+        id: React.PropTypes.string.isRequired,
+        onFinish: React.PropTypes.func
     },
 
     getInitialState() {
@@ -13,12 +14,13 @@ window.InterviewArea = React.createClass({
     },
 
     startRecording() {
-        var ws = new WebSocket(`wss://${location.host}/api/interviews/record`);
+        var ws = new WebSocket(`wss://${location.host}/api/interviews/record/text`);
         ws.onopen = (evt) => {
             ws.send(this.props.id);
             this.streamCreator = new KeyboardStreamCreator(ws);
             window.streamCreator = this.streamCreator;
             this.setState({recording: true});
+            this.refs.interviewVideoArea.startRecording();
         }
     },
 
@@ -31,30 +33,65 @@ window.InterviewArea = React.createClass({
         this.setState({playing: true});
     },
 
+    stopPlayback() {
+        alert("not yet implemented");
+    },
+
+    stopRecording() {
+        this.refs.interviewVideoArea.stopRecording();
+        this.streamCreator.stopRecording();
+        this.props.onFinish();
+    },
+
     render() {
-        return <div className="interview_area">
-                <InterviewVideoArea />
-                <InterviewTextArea ref="interviewTextArea" defaultValue={this.props.defaultText} streamCreator={this.streamCreator} readOnly={this.props.type !== "playback"} />
-                {(this.props.type == "record" && !this.state.recording) ?
-                    <div className="tc">
-                        <div onClick={this.startRecording} className="button">Start Recording</div>
-                    </div> : (this.props.type == "playback" && !this.state.playing) ?
-                    <div className="tc">
+        var videoarea = this.props.type == "record" ? <InterviewVideoArea ref="interviewVideoArea" id={this.props.id} recording={this.state.recording} /> : <video src="/" id="camera-stream" className="video_capture_window"></video>
+        var button;
+        switch(this.props.type) {
+            case "playback":
+                if (this.state.playing) {
+                    button = <div className="tc">
+                        <div onClick={this.stopPlayback} className="button">Stop Playback</div>
+                    </div>
+                } else {
+                    button = <div className="tc">
                         <div onClick={this.startPlayback} className="button">Start Playback</div>
-                    </div> : null}
+                    </div>
+                }
+                break;
+            case "record":
+                if (this.state.recording) {
+                    button = <div className="tc">
+                        <div onClick={this.stopRecording} className="button">Finish Interview</div>
+                    </div>
+                } else {
+                    button = <div className="tc">
+                        <div onClick={this.startRecording} className="button">Start Interview</div>
+                    </div>
+                }
+                break;
+        }
+
+        return <div className="interview_area">
+                {videoarea}
+                <InterviewTextArea ref="interviewTextArea" defaultValue={this.props.defaultText} streamCreator={this.streamCreator} readOnly={this.props.type !== "playback"} />
+                {button}
             </div>
     }
 });
 
-
 var InterviewVideoArea = React.createClass({
+    propTypes: {
+        id: React.PropTypes.string.isRequired
+    },
 
     getInitialState: function() {
         return ({
-            vid_src: "", 
+            vid_src: "",
             multiStreamRecorder:null,
             blob_no:0,
-            video_title: 'vid_0002'
+            video_title: 'vid_0002',
+            vSock: null,
+            aSock: null
         });
     },
 
@@ -63,50 +100,28 @@ var InterviewVideoArea = React.createClass({
     },
 
     sendBlobToServer: function(blob) {
-
-        $.ajax({
-            type: 'POST',
-            url: '/api/interviews/blobpiece/video',
-            data: blob.video,
-            processData: false,
-            contentType: false
-        });
-
-        $.ajax({
-            type: 'POST',
-            url: '/api/interviews/blobpiece/audio',
-            data: blob.audio,
-            processData: false,
-            contentType: false
-        });
-
-        this.setState({blob_no: this.state.blob_no+1})
-    },
-
-    tellServerInterviewStarted: function() {
-        $.ajax({
-            type: 'POST',
-            url: '/api/interviews/blobpiece/started',
-            data: JSON.stringify({username: 'djprof', title: this.state.video_title})
-        });
-    },
-
-    tellServerInterviewStopped: function() {
-        $.ajax({
-            type: 'POST',
-            url: '/api/interviews/blobpiece/finished',
-            data: JSON.stringify({username: 'djprof', no_of_blobs: this.state.blob_no})
-        });
+        if (this.state.vSock.readyState == WebSocket.OPEN &&
+            this.state.aSock.readyState == WebSocket.OPEN) {
+            this.state.vSock.send(blob.video);
+            this.state.aSock.send(blob.audio);
+        }
     },
 
     startRecording: function() {
-        this.tellServerInterviewStarted();
+        var videoSocket = new WebSocket(`wss://${location.host}/api/interviews/record/video`);
+        var audioSocket = new WebSocket(`wss://${location.host}/api/interviews/record/audio`);
+
+        videoSocket.onopen = () => videoSocket.send(this.props.id);
+        audioSocket.onopen = () => audioSocket.send(this.props.id);
+
+        this.setState({vSock: videoSocket, aSock: audioSocket});
         this.state.multiStreamRecorder.start(3000); //3000 is blob interval time
     },
 
     stopRecording: function() {
         this.state.multiStreamRecorder.stop()
-        this.tellServerInterviewStopped();
+        this.state.vSock.close();
+        this.state.aSock.close();
     },
 
     getFeed: function() {
@@ -134,7 +149,6 @@ var InterviewVideoArea = React.createClass({
                     // Create an object URL for the video stream and use this
                     // to set the video source.
                     var sauce = window.URL.createObjectURL(localMediaStream);
-                    thee.setState({vid_src: sauce});
 
                     var newmultiStreamRecorder = new MultiStreamRecorder(localMediaStream);
                     newmultiStreamRecorder.audioChannels = 1;
@@ -142,8 +156,7 @@ var InterviewVideoArea = React.createClass({
                         thee.sendBlobToServer(blobs)
                     };
 
-                    thee.setState({multiStreamRecorder: newmultiStreamRecorder})
-                    // thee.startRecording();
+                    thee.setState({vid_src: sauce, multiStreamRecorder: newmultiStreamRecorder})
                 },
 
                 // Error Callback
@@ -230,9 +243,13 @@ class KeyboardStreamCreator {
         this.ws = ws;
         this.stream = [];
         this.startTime = Date.now();
+        this.recording = true;
     }
 
     handleEvent(e, ta, cb) {
+        if (!this.recording)
+            return;
+
         var selection = ta.selectionEnd - ta.selectionStart > 0;
 
         var change;
@@ -264,7 +281,11 @@ class KeyboardStreamCreator {
             this.stream.push(change);
             this.ws.send(change.toString());
         }
+    }
 
+    stopRecording() {
+        this.recording = false;
+        this.ws.close();
     }
 
 }

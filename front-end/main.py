@@ -69,6 +69,27 @@ class BaseHandler(tornado.web.RequestHandler):
     def db(self):
         return self.application.db
 
+class RecordingHandler(tornado.websocket.WebSocketHandler):
+    interviewid = ""
+    name = "blank"
+
+    def open(self):
+        print("opened " + self.name + " websocket")
+
+    def on_message(self, message):
+        if self.interviewid == "":
+            self.interviewid = message;
+            print("%s websocket connected to interview %s" % (self.name, self.interviewid))
+        else:
+            self.message(message)
+
+    def message(self, message):
+        raise NotImplementedError
+
+    def on_close(self):
+        print(self.name + " websocket closed with id" + self.interviewid)
+
+
 class Interview(BaseHandler):
     @gen.coroutine
     def get(self):
@@ -100,86 +121,61 @@ class AddInterview(BaseHandler):
     def post(self):
         self.write("lol u got mail m8")
 
-class RecordInterviewText(tornado.websocket.WebSocketHandler):
-    interviewid = ""
-    def open(self):
-        print("websocket open")
+class TextRecorder(RecordingHandler):
+    name = "text"
 
-    def on_message(self, message):
-        if self.interviewid == "":
-            print("set interview id to " + message)
-            self.interviewid = message
-        else:
-            print("would send: " + self.interviewid + " " + message + " to redis ")
+    def message(self, message):
+        print("sending " + self.interviewid + " " + message + " to redis ")
+        self.application.redis.rpush("interview:"+self.interviewid, message)
+
+class VideoRecorder(RecordingHandler):
+    name = "video"
+    blob_count = 0
+
+    def message(self, message):
+        print("%s recieved blob number %d" % (self.name, self.blob_count))
+        filename = "%s_%d_video.webm" % (self.interviewid, self.blob_count)
+        with open("intermediates/%s_video.txt" % self.interviewid, "a") as f:
+            f.write("file '"+filename+"'\n")
+        with open("intermediates/%s" % filename, "w") as f:
+            f.write(message)
+        self.blob_count += 1
 
     def on_close(self):
-        print("websocket closed with id" + self.interviewid)
+        print("video recording stopped, merging files")
+        i = self.interviewid
+        subprocess.call("ffmpeg -nostdin -f concat -i intermediates/%s_video.txt -c copy public/outputs/%s_video.webm" % (i,i), shell=True)
 
-class VideoHandler(BaseHandler):
-    def post(self):
-        blob = self.request.body
-        videofilename = BaseHandler.interview_title+'_'+str(BaseHandler.v_blob_count)+'.webm'
-        directory = os.path.join('intermediates/'+BaseHandler.username)
+class AudioRecorder(RecordingHandler):
+    name = "audio"
+    blob_count = 0
 
-        #txt file with all blobs in it
-        with open(directory+"/"+interview_title+".txt", "a") as f:
-            f.write("file '"+videofilename+"'\n")
+    def message(self, message):
+        print("%s recieved blob number %d" % (self.name, self.blob_count))
+        filename = "%s_%d_audio.webm" % (self.interviewid, self.blob_count)
+        with open("intermediates/%s_audio.txt" % self.interviewid, "a") as f:
+            f.write("file '%s'\n" % filename)
 
-        #write blob to file
-        f = open(directory+'/'+videofilename, 'w')
-        f.write(blob)
-
-        #inc blob count
-        BaseHandler.v_blob_count+=1
-
-class AudioHandler(BaseHandler):
-    def post(self):
-        blob = self.request.body
-
-        audiofilename = BaseHandler.interview_title+'_'+str(BaseHandler.a_blob_count)+'.webm'
-        directory = os.path.join('intermediates/'+BaseHandler.username)
-
-        with open(directory+"/"+interview_title+".txt", "a") as f:
-            f.write("file '"+audiofilename+"'\n")
-
-        f = open(directory+'/'+audiofilename, 'w')
-        f.write(blob)
-
-        BaseHandler.a_blob_count+=1
-
-class HelloHandler(BaseHandler):
-    def post(self):
-        print("Hello - let's start recording our interview")
-        jsonstr = json.loads(self.request.body)
-        BaseHandler.username = jsonstr['username']
-        BaseHandler.interview_title = jsonstr['title']
-
-        directory = os.path.join('intermediates/'+BaseHandler.username)
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-
-class GoodbyeHandler(BaseHandler):
-    def post(self):
-        print("Goodbye - lets mergy the video")
-        intermediatedirectory = os.path.join('intermediates/'+BaseHandler.username+'/')
-        videotxtfile = intermediatedirectory+'/'+BaseHandler.interview_title+'.txt'
-        subprocess.call('ffmpeg -f concat -i '+videotxtfile+' -c copy front-end/public/outputs/'+BaseHandler.interview_title+'.webm', shell=True);
-
+        with open("intermediates/%s" % filename, "wb") as f:
+            f.write(message)
+        self.blob_count += 1
 
 def main():
     tornado.options.parse_command_line()
+
+    if not os.path.exists("intermediates/"):
+        os.makedirs("intermediates")
+    if not os.path.exists("public/outputs"):
+        os.makedirs("public/outputs")
 
     handlers = [
         (r'/', MainHandler),
         (r'/interview.html', Interview),
         (r'/api/getinterviews', GetInterviews),
         (r'/api/interviews/add', AddInterview),
-        (r'/api/interviews/record', RecordInterviewText),
-
-        (r'/api/interviews/blobpiece/video', VideoHandler),
-        (r'/api/interviews/blobpiece/audio', AudioHandler),
-        (r'/api/interviews/blobpiece/started', HelloHandler),
-        (r'/api/interviews/blobpiece/finished', GoodbyeHandler),
+        (r'/api/interviews/record/text', TextRecorder),
+        (r'/api/interviews/record/video', VideoRecorder),
+        (r'/api/interviews/record/audio', AudioRecorder),
         (r'/(.*)', tornado.web.StaticFileHandler, {'path': public_root}),
     ]
 
@@ -195,7 +191,7 @@ def main():
         ioloop=ioloop
     )
 
-    r = redis.StrictRedis(host=redishost, port=6379, db=0)
+    application.redis = redis.StrictRedis(host=redishost, port=6379, db=0)
 
     future = application.db.connect()
     ioloop.add_future(future, lambda f: ioloop.stop())

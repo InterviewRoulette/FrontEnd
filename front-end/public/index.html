@@ -18,9 +18,8 @@
         <section class="banner">
             <div class="container">
                 <div class="half half1 text_centering">
-                    <video width="450" id="front_page_vid" controls>
-                        <source src="videos/intro.mp4" type="video/mp4">
-                    </video>
+                    <div onclick="play();" id="vidwrap" style="background-color: black; height:250px; width:450px; overflow:hidden; cursor:pointer;"></div>
+                    <script type="text/javascript">function play(){document.getElementById('vidwrap').innerHTML = '<iframe width="450" height="250" src="https://www.youtube.com/embed/b2F-DItXtZs?autoplay=1&controls=0&showinfo=0&theme=light&color=white" frameborder="0" style="height:250px"></iframe>';}</script>
                 </div>
                 <div class="half half2">
                     <p class="intro_title">Smash your next coding interview.</p>

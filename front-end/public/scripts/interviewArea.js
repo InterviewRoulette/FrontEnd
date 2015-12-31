@@ -60,7 +60,7 @@ window.InterviewArea = React.createClass({
         if (this.props.type=="record") {
             videoarea = <InterviewVideoArea ref="interviewVideoArea" id={this.props.id} recording={this.state.recording} />
         } else {
-            videoarea = <video controls ref="playback" src={`/outputs/${this.props.id}.webm`} id="camera-stream" className="video_capture_window"></video>
+            videoarea = <video ref="playback" src={`/outputs/${this.props.id}.webm`} id="camera-stream" className="video_capture_window"></video>
         }
 
         var button;
@@ -180,7 +180,7 @@ var InterviewVideoArea = React.createClass({
     },
 
     render() {
-        return <video ref="video" muted autoPlay id="camera-stream" className="video_capture_window" src={this.state.vid_src} controls></video>
+        return <video ref="video" muted autoPlay id="camera-stream" className="video_capture_window" src={this.state.vid_src}></video>
     }
 });
 

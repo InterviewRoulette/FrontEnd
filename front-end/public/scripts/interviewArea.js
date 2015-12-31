@@ -230,7 +230,8 @@ var InterviewTextArea = React.createClass({
             window.requestAnimationFrame(() => {
                 if (this._ta == null)
                     this._ta = ReactDOM.findDOMNode(this);
-                this._ta.setSelectionRange(this.nextCursorLocation, this.nextCursorLocation);
+                if (this.nextCursorLocation >= 0) // race conditions when two requestAnimationFrames stack up
+                    this._ta.setSelectionRange(this.nextCursorLocation, this.nextCursorLocation);
                 this.nextCursorLocation = -1;
             });
         }

@@ -1,7 +1,7 @@
 var InterviewApp = React.createClass({
 	getInitialState: function() {
 		// dont use stage 0 - boring and pointless!
-		return ({currentStage: 1, showAlert: false});
+		return ({currentStage: 1, showAlert: false, interviewid: null});
 	},
 
 	nextStage: function() {
@@ -16,20 +16,24 @@ var InterviewApp = React.createClass({
 		this.setState({showAlert: false});
 	},
 
+	setInterviewID: function(id) {
+		this.setState({interviewid: id});
+	},
+
 	render: function() {
 		var component = null;
 		switch(this.state.currentStage){
 
 			case 0: component = (<InterviewInstructions showAlert={this.showAlert} nextStage={this.nextStage}/>); break;
-			case 1: component = (<InterviewDetails showAlert={this.showAlert} nextStage={this.nextStage}/>); break;
-			case 2: component = (<TheInterview showAlert={this.showAlert} nextStage={this.nextStage}/>); break;
+			case 1: component = (<InterviewDetails setInterviewID={this.setInterviewID} showAlert={this.showAlert} nextStage={this.nextStage}/>); break;
+			case 2: component = (<TheInterview iid={this.state.interviewid} showAlert={this.showAlert} nextStage={this.nextStage}/>); break;
 			// case 3:
 			    // this.stream = window.streamCreator.stream;
 			    // component = (<PreparingInterview nextStage={this.nextStage}/>);
 			    // break;
 			// case 4: component = (<NewQuestion nextStage={this.nextStage} stream={this.stream}/>);break;
-			case 3: component = (<Finalizing nextStage={this.nextStage}/>);break;
-			case 4: component = (<Finished nextStage={this.nextStage}/>);break;
+			case 3: component = (<Finalizing iid={this.state.interviewid} nextStage={this.nextStage}/>);break;
+			case 4: component = (<Finished iid={this.state.interviewid} nextStage={this.nextStage}/>);break;
 
 			default: this.setState({currentStage: 0});
 		}
@@ -46,7 +50,7 @@ var InterviewApp = React.createClass({
 
 var Finished = React.createClass({
 	takeToInterview: function() {
-		window.location.href="interview.html?vid=1"
+		window.location.href="interview.html?vid=1" //replace later with this.props.iid
 	},
 
 	render: function() {
@@ -87,9 +91,8 @@ var Finalizing = React.createClass({
         $.ajax({
             url: "/api/interviews/finished",
             cache: false,
-            data: "someid",
+            data: this.props.iid,
             success: function(data) {
-            	console.log(data)
                 thee.props.nextStage();
             }.bind(this),
             error: function(xhr, status, err) {
@@ -122,22 +125,22 @@ var Finalizing = React.createClass({
 // 	}
 // });
 
-var PreparingInterview = React.createClass({
-	render: function() {
-		return (
-			<section className="white bluetop minH">
-				<div className="container">
-					<h1>Preparing</h1>
+// var PreparingInterview = React.createClass({
+// 	render: function() {
+// 		return (
+// 			<section className="white bluetop minH">
+// 				<div className="container">
+// 					<h1>Preparing</h1>
 
-					<img className="loading" src="images/loading_gif.gif" />
-					<div className="tc">
-						<div onClick={this.props.nextStage} className="button">Manual Continue</div>
-					</div>
-				</div>
-			</section>
-		);
-	}
-});
+// 					<img className="loading" src="images/loading_gif.gif" />
+// 					<div className="tc">
+// 						<div onClick={this.props.nextStage} className="button">Manual Continue</div>
+// 					</div>
+// 				</div>
+// 			</section>
+// 		);
+// 	}
+// });
 
 var TheInterview = React.createClass({
 	render: function() {
@@ -147,7 +150,7 @@ var TheInterview = React.createClass({
 					<h1>All set to begin!</h1>
 					<br />
 					<br />
-                    <InterviewArea type="record" id="someid" onFinish={this.props.nextStage}/>
+                    <InterviewArea type="record" id={this.props.iid} onFinish={this.props.nextStage}/>
 				</div>
 			</section>
 		);
@@ -155,6 +158,13 @@ var TheInterview = React.createClass({
 });
 
 var InterviewDetails = React.createClass({
+	componentDidMount: function() {
+		this.getInterviewID();
+	},
+
+	getInterviewID: function() {
+		this.props.setInterviewID("someid");
+	},
 
 	render: function() {
 		return (

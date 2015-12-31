@@ -27,7 +27,7 @@ window.InterviewArea = React.createClass({
     startPlayback() {
         this.setState({playing: true});
         this.refs.playback.play();
-        setTimeout(this.nextTextChange);
+        setTimeout(this.nextTextChange, this.props.stream[0].timestamp);
     },
 
     stopPlayback() {
@@ -117,7 +117,7 @@ var InterviewVideoArea = React.createClass({
     sendBlobToServer: function(blob) {
         if (this.state.vSock.readyState == WebSocket.OPEN &&
             this.state.aSock.readyState == WebSocket.OPEN) {
-            this.state.vSock.send(blob.video);
+            this.state.vSock.send(blob);
             this.state.aSock.send(blob.audio);
         }
     },
@@ -130,7 +130,7 @@ var InterviewVideoArea = React.createClass({
         audioSocket.onopen = () => audioSocket.send(this.props.id);
 
         this.setState({vSock: videoSocket, aSock: audioSocket});
-        this.state.multiStreamRecorder.start(3000); //3000 is blob interval time
+        this.state.multiStreamRecorder.start(5000); //3000 is blob interval time
     },
 
     stopRecording: function() {
@@ -154,15 +154,16 @@ var InterviewVideoArea = React.createClass({
                 // Constraints
                 {
                     video: true,
-                    audio: true
+                    //audio: true
                 }, (localMediaStream) => { // success callback (with new arrow syntax!!!)
 
                     // Create an object URL for the video stream and use this
                     // to set the video source.
                     var sauce = window.URL.createObjectURL(localMediaStream);
 
-                    var newmultiStreamRecorder = new MultiStreamRecorder(localMediaStream);
-                    newmultiStreamRecorder.audioChannels = 1;
+                    var newmultiStreamRecorder = new MediaStreamRecorder(localMediaStream);
+                    newmultiStreamRecorder.mimeType = "video/webm"
+                    //newmultiStreamRecorder.audioChannels = 1;
                     newmultiStreamRecorder.video = this.refs.video;
                     newmultiStreamRecorder.ondataavailable = (blobs) => this.sendBlobToServer(blobs)
 

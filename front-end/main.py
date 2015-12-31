@@ -141,6 +141,7 @@ class MediaRecorder(RecordingHandler):
             os.remove("intermediates/%s_%s.txt" % (self.interviewid, self.type))
             print("removed old txt file")
         except OSError:
+            print("didn't remove old txt file")
             pass
 
     def message(self, message):

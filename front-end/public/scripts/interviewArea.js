@@ -136,7 +136,7 @@ var InterviewQuestionArea = React.createClass({
                         <ul>
                             <li><span>Above you can see your video capture(left) and code editor(right)</span></li>
                             <li><span>On clicking start interview you will recieve your question - do your best!</span></li>
-                            <li><span>If all is working, click above to begin</span></li>
+                            <li><span>If all is working, click below to begin</span></li>
                         </ul>
                     </div>);
                 break;

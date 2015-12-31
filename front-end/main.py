@@ -97,11 +97,21 @@ class Interview(BaseHandler):
     @gen.coroutine
     def get(self):
         vid = self.get_argument('vid', True)
-        cursor = yield self.db.execute("SELECT title,v_url FROM videos WHERE vid="+vid)
-        v_title = cursor.fetchone()[0]
-        print(v_title)
+        cursor = yield self.db.execute("SELECT title,v_url,t_url FROM videos WHERE vid="+vid)
+        try:
+            v_title = cursor.fetchone()[0]
+        except:
+            v_title = "title_default"
+        try:
+            v_url = cursor.fetchone()[1]
+        except:
+            v_url = "video_url_default"
+        try:
+            t_url = cursor.fetchone()[2]
+        except:
+            t_url = "text_url_default"
 
-        self.render('public/interview.html', videotitle = v_title)
+        self.render('public/interview.html', videotitle = v_title, videourl = v_url, texturl = t_url)
 
 
 class GetInterviews(BaseHandler):

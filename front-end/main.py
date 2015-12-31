@@ -155,7 +155,7 @@ class MediaRecorder(RecordingHandler):
 
         p = Subprocess("ffmpeg -y -nostdin -f concat -i %s -c copy %s" % (txt, out), shell=True)
         yield p.wait_for_exit()
-        self.redis.set(self.type+iid, "true")
+        self.redis.set(self.type+":"+iid, "true")
 
         if self.redis.get("video:"+iid) == "true" and self.redis.get("audio:"+iid) == "true":
             print("merging video and audio files")

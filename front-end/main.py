@@ -105,7 +105,7 @@ class Interview(BaseHandler):
         try:
             v_url = cursor.fetchone()[1]
         except:
-            v_url = "video_url_default"
+            v_url = "https://s3-eu-west-1.amazonaws.com/interviewroulettevideos/"+vid+".webm"
         try:
             t_url = cursor.fetchone()[2]
         except:

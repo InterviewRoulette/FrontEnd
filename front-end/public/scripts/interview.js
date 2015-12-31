@@ -17,7 +17,7 @@ var Interview = React.createClass({
 						<br />
 						<br />
 						<div>
-							<video ref="playback" src={this.state.video_url} id="camera-stream" className="video_capture_window"></video>
+							<video controls ref="playback" src={this.state.video_url} id="camera-stream" className="video_capture_window"></video>
 							<textarea ref="textarea" className="coding_capture_window" placeholder="..." />
 						</div>
 

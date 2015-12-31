@@ -97,11 +97,11 @@ class Interview(BaseHandler):
     @gen.coroutine
     def get(self):
         vid = self.get_argument('vid', True)
-        cursor = yield self.db.execute("SELECT * FROM videos WHERE vid="+vid)
-        videojson = json_encode(videoRowToJson(cursor.fetchone()))
-        print(videojson)
+        cursor = yield self.db.execute("SELECT title,v_url FROM videos WHERE vid="+vid)
+        v_title = cursor.fetchone()[0]
+        print(v_title)
 
-        self.render('public/interview.html', interviewdata = videojson)
+        self.render('public/interview.html', videotitle = v_title)
 
 
 class GetInterviews(BaseHandler):

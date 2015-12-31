@@ -44,7 +44,7 @@ var InterviewApp = React.createClass({
 
 var Finished = React.createClass({
 	takeToInterview: function() {
-		
+		window.location.href="interview.html?vid=1"
 	},
 
 	render: function() {

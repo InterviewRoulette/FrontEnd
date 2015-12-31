@@ -171,6 +171,14 @@ class MediaRecorder(RecordingHandler):
             print("didn't remove old txt file")
             pass
 
+class GetQuestion(BaseHandler):
+    def get(self):
+        # query database for question
+        self.write("Reverse a Linked List using only two pointers")
+
+class IsFinishedProcessing(BaseHandler):
+    def get(self):
+        self.write('oui oui')
 
 def main():
     tornado.options.parse_command_line()
@@ -185,6 +193,8 @@ def main():
         (r'/interview.html', Interview),
         (r'/api/getinterviews', GetInterviews),
         (r'/api/interviews/add', AddInterview),
+        (r'/api/interviews/finished', IsFinishedProcessing),
+        (r'/api/interviews/record/question', GetQuestion),
         (r'/api/interviews/record/text', TextRecorder),
         (r'/api/interviews/record/video', MediaRecorder, dict(type="video", format="webm")),
         (r'/api/interviews/record/audio', MediaRecorder, dict(type="audio", format="wav")),

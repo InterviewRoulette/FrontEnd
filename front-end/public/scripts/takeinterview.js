@@ -1,6 +1,6 @@
 var InterviewApp = React.createClass({
 	getInitialState: function() {
-		return ({currentStage: 2, showAlert: false});
+		return ({currentStage: 4, showAlert: false});
 	},
 
 	nextStage: function() {
@@ -25,9 +25,9 @@ var InterviewApp = React.createClass({
 			    this.stream = window.streamCreator.stream;
 			    component = (<PreparingInterview nextStage={this.nextStage}/>);
 			    break;
-			case 4: component = (<NewQuestion nextStage={this.nextStage} stream={this.stream}/>);break;
-			case 5: component = (<Finalizing nextStage={this.nextStage}/>);break;
-			case 6: component = (<Finished nextStage={this.nextStage}/>);break;
+			// case 4: component = (<NewQuestion nextStage={this.nextStage} stream={this.stream}/>);break;
+			case 4: component = (<Finalizing nextStage={this.nextStage}/>);break;
+			case 5: component = (<Finished nextStage={this.nextStage}/>);break;
 
 			default: this.setState({currentStage: 0});
 		}
@@ -43,14 +43,27 @@ var InterviewApp = React.createClass({
 });
 
 var Finished = React.createClass({
+	takeToInterview: function() {
+		
+	},
+
 	render: function() {
 		return (
 			<section className="white bluetop minH">
 				<div className="container">
-					<h1>Finished</h1>
-					<h3>Well done!</h3>
+					<h1>Finished!</h1>
+
+					<center>
+						<img src="images/batman.jpg" />
+						<h3>You are the real hero</h3>
+					</center>
+
+					<br />
+					<br />
+					<br />
+
 					<div className="tc">
-						<div onClick={this.props.nextStage} className="button">Manual Continue</div>
+						<div onClick={this.takeToInterview} className="button">Watch Interview</div>
 					</div>
 				</div>
 			</section>
@@ -59,15 +72,35 @@ var Finished = React.createClass({
 });
 
 var Finalizing = React.createClass({
+	getInitialState: function() {
+        return ({heardFromServer: false});
+    },
+
+	componentDidMount: function() {
+		this.isFinishedProcessingVideo();
+	},
+
+    isFinishedProcessingVideo: function() {
+    	var thee = this;
+        $.ajax({
+            url: "/api/interviews/finished",
+            cache: false,
+            data: "someid",
+            success: function(data) {
+            	console.log(data)
+                thee.props.nextStage();
+            }.bind(this),
+            error: function(xhr, status, err) {
+            }.bind(this)
+        });
+    },
+
 	render: function() {
 		return (
 			<section className="white bluetop minH">
 				<div className="container">
-					<h1>Finalizing</h1>
+					<h1>Processing your interview</h1>
 					<img className="loading" src="images/loading_gif.gif" />
-					<div className="tc">
-						<div onClick={this.props.nextStage} className="button">Manual Continue</div>
-					</div>
 				</div>
 			</section>
 		);
@@ -113,13 +146,6 @@ var InterviewReview = React.createClass({
 					<br />
 					<br />
                     <InterviewArea type="record" id="someid" onFinish={this.props.nextStage}/>
-					<br />
-					<div className="further_instructions">
-						<ul>
-							<li><span>Above you can see your video capture(left) and code editor(right)</span></li>
-							<li><span>If all is working, click above to begin</span></li>
-						</ul>
-					</div>
 				</div>
 			</section>
 		);
@@ -133,7 +159,7 @@ var InterviewDetails = React.createClass({
 			<div>
 				<section className="white bluetop">
 					<div className="container">
-						<h1>Choose your interview</h1>
+						<h1>Choose your settings</h1>
 						<br />
 						<br />
 						<h4>You are logged in as <span className="emph">djprof</span></h4>
@@ -199,7 +225,7 @@ var InterviewDetails = React.createClass({
 						<br />
 						<br />
 
-						<div onClick={this.props.nextStage} className="button">Review Settings</div>
+						<div onClick={this.props.nextStage} className="button">Next Stage</div>
 					</div>
 
 				</section>

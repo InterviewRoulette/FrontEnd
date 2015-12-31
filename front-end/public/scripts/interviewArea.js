@@ -89,11 +89,70 @@ window.InterviewArea = React.createClass({
                 break;
         }
 
+        var instructionstate = "instructions";
+        if(this.state.recording == true || this.state.playback == true)
+            instructionstate = "question";
+
         return <div className="interview_area">
                 {videoarea}
                 <InterviewTextArea ref="interviewTextArea" defaultValue={this.props.defaultText} streamCreator={this.streamCreator} readOnly={this.props.type !== "playback"} />
+                
+                <br />
+                <InterviewQuestionArea currentstate={instructionstate}/>
+                <br />
+
                 {button}
             </div>
+    }
+});
+
+var InterviewQuestionArea = React.createClass({
+    getInitialState: function() {
+        return ({question: "Retrieving Question..."});
+    },
+
+    getQuestionFromServer: function() {
+        $.ajax({
+            url: "/api/interviews/record/question",
+            cache: false,
+            success: function(data) {
+                this.setState({question: data});
+            }.bind(this),
+            error: function(xhr, status, err) {
+            }.bind(this)
+        });
+    },
+
+    componentDidMount: function() {
+        this.getQuestionFromServer();
+    },
+
+    render() {
+        var innerstuff;
+        switch(this.props.currentstate) {
+            case "instructions":
+                innerstuff=(
+                    <div className="interview_instructions">
+                        <ul>
+                            <li><span>Above you can see your video capture(left) and code editor(right)</span></li>
+                            <li><span>On clicking start interview you will recieve your question - do your best!</span></li>
+                            <li><span>If all is working, click above to begin</span></li>
+                        </ul>
+                    </div>);
+                break;
+            case "question":
+                innerstuff=(
+                    <div className="question_box">
+                        {this.state.question}
+                    </div>);
+                break;
+        }
+
+        return (
+            <div className="further_instructions">
+                {innerstuff}
+            </div>
+            );
     }
 });
 
@@ -242,7 +301,7 @@ var InterviewTextArea = React.createClass({
     },
 
     render() {
-        return <textarea ref="textarea" onKeyDown={this.eventHandler} onKeyPress={this.eventHandler} className="coding_capture_window" value={this.state.text} onChange={()=>{}}/>
+        return <textarea ref="textarea" onKeyDown={this.eventHandler} onKeyPress={this.eventHandler} className="coding_capture_window" placeholder={this.state.text} onChange={()=>{}}/>
     }
 
 });

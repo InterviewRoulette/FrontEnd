@@ -305,6 +305,19 @@ footer {
 	text-align: center;
 }
 
+.interview_area {
+	text-align: center;
+}
+
+.question_box {
+	text-align: center;
+    margin: 50px 0px;
+    border: 2px solid #22b8eb;
+    padding: 20px;
+    font-size: 14pt;
+    font-weight: 600;
+}
+
 .comment_container {
 	margin-top: 50px;
 	border-top: 2px solid #22b8eb;
@@ -439,6 +452,10 @@ footer {
 	margin-top: 17px;
 }
 
+.interview_instructions {
+	text-align: left;
+}
+
 .tc {
 	text-align: center;
 }
@@ -561,6 +578,8 @@ input {
 	width: 400px;
 	display: inline-block;
 	vertical-align: top;
+	border-radius: 10px;
+    margin-top: 20px;
 }
 
 .coding_capture_window {

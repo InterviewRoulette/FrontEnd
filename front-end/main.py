@@ -134,16 +134,6 @@ class MediaRecorder(RecordingHandler):
         self.type = type
         self.format = format
 
-    def open(self):
-        super(MediaRecorder, self).open()
-        # clear file if it already exists
-        try:
-            os.remove("intermediates/%s_%s.txt" % (self.interviewid, self.type))
-            print("removed old txt file")
-        except OSError:
-            print("didn't remove old txt file")
-            pass
-
     def message(self, message):
         print("%s recieved blob number %d" % (self.type, self.blob_count))
         filename = "%s_%d_%s.%s" % (self.interviewid, self.blob_count, self.type, self.format)
@@ -172,6 +162,15 @@ class MediaRecorder(RecordingHandler):
             p = Subprocess("ffmpeg -y -nostdin -i intermediates/%s_audio.wav -i intermediates/%s_video.webm -c:a libvorbis -c:v copy -shortest public/outputs/%s.webm" % (iid,iid,iid), shell=True)
             yield p.wait_for_exit()
             self.redis.set("media:"+iid, "true")
+
+        # cleanup video text file to make testing easier
+        try:
+            os.remove("intermediates/%s_%s.txt" % (self.interviewid, self.type))
+            print("removed old txt file")
+        except OSError:
+            print("didn't remove old txt file")
+            pass
+
 
 def main():
     tornado.options.parse_command_line()

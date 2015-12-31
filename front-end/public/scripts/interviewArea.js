@@ -6,6 +6,8 @@ window.InterviewArea = React.createClass({
         onFinish: React.PropTypes.func
     },
 
+    prevTimestamp: 0,
+
     getInitialState() {
         return {
             recording: false,
@@ -27,7 +29,7 @@ window.InterviewArea = React.createClass({
     startPlayback() {
         this.setState({playing: true});
         this.refs.playback.play();
-        setTimeout(this.nextTextChange, this.props.stream[0].timestamp);
+        setTimeout(this.nextTextChange, this.props.stream[0].timestamp - this.prevTimestamp);
     },
 
     stopPlayback() {
@@ -44,8 +46,9 @@ window.InterviewArea = React.createClass({
     nextTextChange() {
         var c = this.props.stream.shift();
         this.refs.interviewTextArea.processChange(c);
+        this.prevTimestamp = c.timestamp;
         if (this.props.stream.length > 0 && this.state.playing) {
-            setTimeout(this.nextTextChange, this.props.stream[0].timestamp - c.timestamp);
+            setTimeout(this.nextTextChange, this.props.stream[0].timestamp - this.prevTimestamp);
         } else {
             this.stopPlayback();
         }
@@ -117,7 +120,7 @@ var InterviewVideoArea = React.createClass({
     sendBlobToServer: function(blob) {
         if (this.state.vSock.readyState == WebSocket.OPEN &&
             this.state.aSock.readyState == WebSocket.OPEN) {
-            this.state.vSock.send(blob);
+            this.state.vSock.send(blob.video);
             this.state.aSock.send(blob.audio);
         }
     },
@@ -154,16 +157,16 @@ var InterviewVideoArea = React.createClass({
                 // Constraints
                 {
                     video: true,
-                    //audio: true
+                    audio: true
                 }, (localMediaStream) => { // success callback (with new arrow syntax!!!)
 
                     // Create an object URL for the video stream and use this
                     // to set the video source.
                     var sauce = window.URL.createObjectURL(localMediaStream);
 
-                    var newmultiStreamRecorder = new MediaStreamRecorder(localMediaStream);
-                    newmultiStreamRecorder.mimeType = "video/webm"
-                    //newmultiStreamRecorder.audioChannels = 1;
+                    var newmultiStreamRecorder = new MultiStreamRecorder(localMediaStream);
+                    newmultiStreamRecorder.audioChannels = 1;
+                    newmultiStreamRecorder.bufferSize = 16384;
                     newmultiStreamRecorder.video = this.refs.video;
                     newmultiStreamRecorder.ondataavailable = (blobs) => this.sendBlobToServer(blobs)
 

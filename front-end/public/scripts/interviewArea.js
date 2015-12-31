@@ -25,23 +25,31 @@ window.InterviewArea = React.createClass({
     },
 
     startPlayback() {
-        this.props.stream.forEach((change) =>
-            setTimeout(() =>
-                this.refs.interviewTextArea.processChange(change)
-            , change.time)
-        );
+        this.nextTextChange();
         this.refs.playback.play();
         this.setState({playing: true});
     },
 
     stopPlayback() {
-        alert("not yet implemented");
+        this.refs.playback.pause();
+        this.setState({playing: false});
     },
 
     stopRecording() {
         this.refs.interviewVideoArea.stopRecording();
         this.streamCreator.stopRecording();
         this.props.onFinish();
+    },
+
+    nextTextChange() {
+        if (!this.state.playing)
+            return;
+
+        var c = this.props.stream.shift();
+        this.refs.interviewTextArea.processChange(c);
+        if (this.props.stream.length > 0) {
+            setTimeout(this.nextTextChange.bind(this), this.props.stream[0].timestamp - c.timestamp);
+        }
     },
 
     render() {
@@ -133,7 +141,6 @@ var InterviewVideoArea = React.createClass({
     },
 
     getFeed: function() {
-        var thee = this;
         // Normalize the various vendor prefixed versions of getUserMedia.
         navigator.getUserMedia = (navigator.getUserMedia ||
                                   navigator.webkitGetUserMedia ||
@@ -149,10 +156,7 @@ var InterviewVideoArea = React.createClass({
                 {
                     video: true,
                     audio: true
-                },
-
-                // Success Callback
-                function(localMediaStream) {
+                }, (localMediaStream) => { // success callback (with new arrow syntax!!!)
 
                     // Create an object URL for the video stream and use this
                     // to set the video source.
@@ -160,18 +164,11 @@ var InterviewVideoArea = React.createClass({
 
                     var newmultiStreamRecorder = new MultiStreamRecorder(localMediaStream);
                     newmultiStreamRecorder.audioChannels = 1;
-                    newmultiStreamRecorder.ondataavailable = function (blobs) {
-                        thee.sendBlobToServer(blobs)
-                    };
+                    newmultiStreamRecorder.video = this.refs.video;
+                    newmultiStreamRecorder.ondataavailable = (blobs) => this.sendBlobToServer(blobs)
 
-                    thee.setState({vid_src: sauce, multiStreamRecorder: newmultiStreamRecorder})
-                },
-
-                // Error Callback
-                function(err) {
-                    // Log the error to the console.
-                    console.log('The following error occurred when trying to use getUserMedia: ' + err);
-                }
+                    this.setState({vid_src: sauce, multiStreamRecorder: newmultiStreamRecorder})
+                }, (err) => console.log('The following error occurred when trying to use getUserMedia: ' + err)
             )
 
         } else {
@@ -180,7 +177,7 @@ var InterviewVideoArea = React.createClass({
     },
 
     render() {
-        return <video muted autoPlay id="camera-stream" className="video_capture_window" src={this.state.vid_src} controls></video>
+        return <video ref="video" muted autoPlay id="camera-stream" className="video_capture_window" src={this.state.vid_src} controls></video>
     }
 });
 

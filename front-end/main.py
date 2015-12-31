@@ -14,6 +14,7 @@ import tornado.ioloop
 import tornado.options
 import tornado.web
 import tornado.websocket
+from tornado.process import Subprocess
 
 from tornado.options import define, options
 from tornado.escape import json_encode
@@ -62,13 +63,12 @@ class BaseHandler(tornado.web.RequestHandler):
         return self.application.db
 
 class RecordingHandler(tornado.websocket.WebSocketHandler):
-    interviewid = ""
     name = "blank"
+    interviewid = ""
 
     @property
     def redis(self):
         return self.application.redis
-
 
     def open(self):
         print("opened " + self.name + " websocket")
@@ -125,53 +125,40 @@ class TextRecorder(RecordingHandler):
         print("sending " + self.interviewid + " " + message + " to redis ")
         self.redis.rpush("text:"+self.interviewid, message)
 
-# merges audio and video only if they're both complete - this info is stored in redis
-def check_merge_av(r, i):
-    if r.get("video:"+i) == "true" and r.get("audio:"+i) == "true":
-        print("merging video and audio files")
-        subprocess.call("ffmpeg -nostdin -i intermediates/%s_audio.wav -i intermediates/%s_video.webm -c:a libvorbis -c:v copy -shortest public/outputs/%s.webm" % (i,i,i), shell=True)
-
-
-class VideoRecorder(RecordingHandler):
-    name = "video"
+class MediaRecorder(RecordingHandler):
+    name = "media"
+    type = ""
+    format = ""
     blob_count = 0
 
+    def initialize(self, type, format):
+        self.type = type
+        self.format = format
+
     def message(self, message):
-        print("%s recieved blob number %d" % (self.name, self.blob_count))
-        filename = "%s_%d_video.webm" % (self.interviewid, self.blob_count)
-        with open("intermediates/%s_video.txt" % self.interviewid, "a") as f:
+        print("%s recieved blob number %d" % (self.type, self.blob_count))
+        filename = "%s_%d_%s.%s" % (self.interviewid, self.blob_count, self.type, self.format)
+        with open("intermediates/%s_%s.txt" % (self.interviewid, self.type), "a") as f:
             f.write("file '"+filename+"'\n")
         with open("intermediates/%s" % filename, "w") as f:
             f.write(message)
         self.blob_count += 1
 
+    @gen.coroutine
     def on_close(self):
-        print("video recording stopped, merging files")
-        i = self.interviewid
-        subprocess.call("ffmpeg -nostdin -f concat -i intermediates/%s_video.txt -c copy intermediates/%s_video.webm" % (i,i), shell=True)
-        self.redis.set("video:"+i, "true")
-        check_merge_av(self.redis, i)
+        print(self.type + " recording stopped, merging files")
+        iid = self.interviewid
+        txt = "intermediates/%s_%s.txt" % (iid, self.type)
+        out = "intermediates/%s_%s.%s" % (iid, self.type, self.format)
+        p = Subprocess("ffmpeg -y -nostdin -f concat -i %s -c copy %s" % (txt, out), shell=True)
+        yield p.wait_for_exit()
+        self.redis.set(self.type+iid, "true")
 
-class AudioRecorder(RecordingHandler):
-    name = "audio"
-    blob_count = 0
-
-    def message(self, message):
-        print("%s recieved blob number %d" % (self.name, self.blob_count))
-        filename = "%s_%d_audio.wav" % (self.interviewid, self.blob_count)
-        with open("intermediates/%s_audio.txt" % self.interviewid, "a") as f:
-            f.write("file '%s'\n" % filename)
-
-        with open("intermediates/%s" % filename, "wb") as f:
-            f.write(message)
-        self.blob_count += 1
-
-    def on_close(self):
-        print("audio recording stopped, merging files")
-        i = self.interviewid
-        subprocess.call("ffmpeg -nostdin -f concat -i intermediates/%s_audio.txt -c copy intermediates/%s_audio.wav" % (i,i), shell=True)
-        self.rds.set("audio:"+i, "true")
-        check_merge_av(self.redis, i)
+        if self.redis.get("video:"+iid) == "true" and self.redis.get("audio:"+iid) == "true":
+            print("merging video and audio files")
+            p = Subprocess("ffmpeg -y -nostdin -i intermediates/%s_audio.wav -i intermediates/%s_video.webm -c:a libvorbis -c:v copy -shortest public/outputs/%s.webm" % (iid,iid,iid), shell=True)
+            yield p.wait_for_exit()
+            self.redis.set("media:"+iid, "true")
 
 def main():
     tornado.options.parse_command_line()
@@ -187,8 +174,8 @@ def main():
         (r'/api/getinterviews', GetInterviews),
         (r'/api/interviews/add', AddInterview),
         (r'/api/interviews/record/text', TextRecorder),
-        (r'/api/interviews/record/video', VideoRecorder),
-        (r'/api/interviews/record/audio', AudioRecorder),
+        (r'/api/interviews/record/video', MediaRecorder, dict(type="video", format="webm")),
+        (r'/api/interviews/record/audio', MediaRecorder, dict(type="audio", format="wav")),
         (r'/(.*)', tornado.web.StaticFileHandler, {'path': public_root}),
     ]
 

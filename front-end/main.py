@@ -29,7 +29,7 @@ import boto3
 from boto3.session import Session
 
 #Let's use S3
-s3 = boto3.resource('s3')
+s3_client = boto3.client('s3')
 
 define("port", default=8888, help="run on the given port", type=int)
 public_root = os.path.join(os.path.dirname(__file__), 'public')
@@ -109,7 +109,7 @@ class GetInterviews(BaseHandler):
     def get(self):
         # query database
         cursor = yield self.db.execute("SELECT * FROM videos;")
-        results = cursor.fetchall();
+        results = cursor.fetchall()
 
         # stick results in json to send to client
         interviews = [];
@@ -122,7 +122,12 @@ class GetInterviews(BaseHandler):
 class AddInterview(BaseHandler):
     @gen.coroutine
     def post(self):
-        self.write("lol u got mail m8")
+        interviewtitle = self.request.body
+
+        cursor = yield self.db.execute("INSERT INTO videos (uid, title, rating, difficulty, length, type, catagory, language) VALUES (1, '"+interviewtitle+"',5.0, 3, 3, 1, 'random', 'python') RETURNING vid;")
+        videoid = str(cursor.fetchone()[0])
+
+        self.write(videoid)
 
 class TextRecorder(RecordingHandler):
     name = "text"
@@ -169,6 +174,9 @@ class MediaRecorder(RecordingHandler):
             p = Subprocess("ffmpeg -y -nostdin -i intermediates/%s_audio.wav -i intermediates/%s_video.webm -c:a libvorbis -c:v copy -shortest public/outputs/%s.webm" % (iid,iid,iid), shell=True)
             yield p.wait_for_exit()
             self.redis.set("media:"+iid, "true")
+            
+            #s3_client.upload_file(local file, bucket, remote name)
+            s3_client.upload_file('public/outputs/'+iid+'.webm', 'interviewroulettevideos', iid+'.webm')
 
         # cleanup video text file to make testing easier
         try:
@@ -178,14 +186,22 @@ class MediaRecorder(RecordingHandler):
             print("didn't remove old txt file")
             pass
 
+class IsFinishedProcessing(RecordingHandler):
+    def post(self):
+        iid = self.request.body
+
+        #maybe do this through the text websocket instead....
+
+        #yes - tell client we are ready
+        self.write('oui oui')
+
+
+
 class GetQuestion(BaseHandler):
     def get(self):
         # query database for question
         self.write("Reverse a Linked List using only two pointers")
 
-class IsFinishedProcessing(BaseHandler):
-    def get(self):
-        self.write('oui oui')
 
 def main():
     tornado.options.parse_command_line()
@@ -200,7 +216,7 @@ def main():
         (r'/interview.html', Interview),
         (r'/api/getinterviews', GetInterviews),
         (r'/api/interviews/add', AddInterview),
-        (r'/api/interviews/finished', IsFinishedProcessing),
+        (r'/api/interviews/record/finished', IsFinishedProcessing),
         (r'/api/interviews/record/question', GetQuestion),
         (r'/api/interviews/record/text', TextRecorder),
         (r'/api/interviews/record/video', MediaRecorder, dict(type="video", format="webm")),

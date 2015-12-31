@@ -50,7 +50,7 @@ var InterviewApp = React.createClass({
 
 var Finished = React.createClass({
 	takeToInterview: function() {
-		window.location.href="interview.html?vid=1" //replace later with this.props.iid
+		window.location.href="interview.html?vid="+this.props.iid
 	},
 
 	render: function() {
@@ -89,8 +89,9 @@ var Finalizing = React.createClass({
     isFinishedProcessingVideo: function() {
     	var thee = this;
         $.ajax({
-            url: "/api/interviews/finished",
+            url: "/api/interviews/record/finished",
             cache: false,
+            type: "post",
             data: this.props.iid,
             success: function(data) {
                 thee.props.nextStage();
@@ -144,6 +145,7 @@ var Finalizing = React.createClass({
 
 var TheInterview = React.createClass({
 	render: function() {
+		console.log(this.props.iid)
 		return (
 			<section className="white bluetop minH">
 				<div className="container">
@@ -158,13 +160,36 @@ var TheInterview = React.createClass({
 });
 
 var InterviewDetails = React.createClass({
-	componentDidMount: function() {
-		this.getInterviewID();
+	getInitialState: function() {
+		return({interviewtitle: "my_interview"});
 	},
 
-	getInterviewID: function() {
-		this.props.setInterviewID("someid");
-	},
+	//get iid from database after adding new interview
+    addInterviewToServer: function() {
+    	var thee = this;
+        $.ajax({
+            url: "/api/interviews/add",
+            type: "post",
+            cache: false,
+            data: thee.state.interviewtitle,
+            success: function(data) {
+            	thee.props.setInterviewID(data);
+                thee.props.nextStage();
+            }.bind(this),
+            error: function(xhr, status, err) {
+            }.bind(this)
+        });
+    },
+
+    continueToNextStage: function() {
+    	this.addInterviewToServer();
+    },
+
+    handleChange: function (name, e) {
+      var change = {};
+      change[name] = e.target.value;
+      this.setState(change);
+    },
 
 	render: function() {
 		return (
@@ -231,13 +256,13 @@ var InterviewDetails = React.createClass({
 						<br />
 
 						<h4>Finally, enter a name for your video:</h4>
-						<input className="ml70" type="text" name="video_title" placeholder="enter video name here" />
+						<input onChange={this.handleChange.bind(this, 'interviewtitle')} className="ml70" type="text" name="video_title" placeholder="enter video name here" />
 						<br />
 						<br />
 						<br />
 						<br />
 
-						<div onClick={this.props.nextStage} className="button">Next Stage</div>
+						<div onClick={this.continueToNextStage} className="button">Next Stage</div>
 					</div>
 
 				</section>

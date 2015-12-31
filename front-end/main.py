@@ -24,6 +24,13 @@ from tornado import gen
 from tornado.log import enable_pretty_logging
 enable_pretty_logging()
 
+#import aws SDK
+import boto3
+from boto3.session import Session
+
+#Let's use S3
+s3 = boto3.resource('s3')
+
 define("port", default=8888, help="run on the given port", type=int)
 public_root = os.path.join(os.path.dirname(__file__), 'public')
 

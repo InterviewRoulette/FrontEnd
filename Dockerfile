@@ -9,8 +9,7 @@ RUN apt-get -y build-dep python-psycopg2
 
 # Install pip
 RUN easy_install pip
-RUN pip install momoko redis
-
+RUN pip install momoko redis boto3
 
 # Add files
 ADD /front-end /front-end

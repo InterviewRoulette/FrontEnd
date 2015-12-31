@@ -24,7 +24,7 @@ var InterviewApp = React.createClass({
 		var component = null;
 		switch(this.state.currentStage){
 
-			case 0: component = (<InterviewInstructions showAlert={this.showAlert} nextStage={this.nextStage}/>); break;
+			//case 0: component = (<InterviewInstructions showAlert={this.showAlert} nextStage={this.nextStage}/>); break;
 			case 1: component = (<InterviewDetails setInterviewID={this.setInterviewID} showAlert={this.showAlert} nextStage={this.nextStage}/>); break;
 			case 2: component = (<TheInterview iid={this.state.interviewid} showAlert={this.showAlert} nextStage={this.nextStage}/>); break;
 			// case 3:
@@ -35,7 +35,7 @@ var InterviewApp = React.createClass({
 			case 3: component = (<Finalizing iid={this.state.interviewid} nextStage={this.nextStage}/>);break;
 			case 4: component = (<Finished iid={this.state.interviewid} nextStage={this.nextStage}/>);break;
 
-			default: this.setState({currentStage: 0});
+			default: this.setState({currentStage: 1});
 		}
 
 		return (

@@ -25,9 +25,9 @@ window.InterviewArea = React.createClass({
     },
 
     startPlayback() {
-        this.nextTextChange();
-        this.refs.playback.play();
         this.setState({playing: true});
+        this.refs.playback.play();
+        setTimeout(this.nextTextChange);
     },
 
     stopPlayback() {
@@ -42,13 +42,12 @@ window.InterviewArea = React.createClass({
     },
 
     nextTextChange() {
-        if (!this.state.playing)
-            return;
-
         var c = this.props.stream.shift();
         this.refs.interviewTextArea.processChange(c);
-        if (this.props.stream.length > 0) {
-            setTimeout(this.nextTextChange.bind(this), this.props.stream[0].timestamp - c.timestamp);
+        if (this.props.stream.length > 0 && this.state.playing) {
+            setTimeout(this.nextTextChange, this.props.stream[0].timestamp - c.timestamp);
+        } else {
+            this.stopPlayback();
         }
     },
 

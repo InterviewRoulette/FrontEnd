@@ -27,7 +27,6 @@ enable_pretty_logging()
 define("port", default=8888, help="run on the given port", type=int)
 public_root = os.path.join(os.path.dirname(__file__), 'public')
 
-
 def videoRowToJson(row):
     return {
         "vid": row[0],
@@ -49,7 +48,7 @@ def videoRowToJson(row):
             {"djprof": "Me again, just rewatched it, this was so good!"},
             {"jb12459": "@djprof, not too bad I guess..."}
         ]
-    };
+    }
 
 
 class MainHandler(tornado.web.RequestHandler):
@@ -135,6 +134,15 @@ class MediaRecorder(RecordingHandler):
         self.type = type
         self.format = format
 
+    def open(self):
+        super(MediaRecorder, self).open()
+        # clear file if it already exists
+        try:
+            os.remove("intermediates/%s_%s.txt" % (self.interviewid, self.type))
+            print("removed old txt file")
+        except OSError:
+            pass
+
     def message(self, message):
         print("%s recieved blob number %d" % (self.type, self.blob_count))
         filename = "%s_%d_%s.%s" % (self.interviewid, self.blob_count, self.type, self.format)
@@ -150,6 +158,10 @@ class MediaRecorder(RecordingHandler):
         iid = self.interviewid
         txt = "intermediates/%s_%s.txt" % (iid, self.type)
         out = "intermediates/%s_%s.%s" % (iid, self.type, self.format)
+
+        with open(txt, 'r') as f:
+            print(f.read())
+
         p = Subprocess("ffmpeg -y -nostdin -f concat -i %s -c copy %s" % (txt, out), shell=True)
         yield p.wait_for_exit()
         self.redis.set(self.type+iid, "true")

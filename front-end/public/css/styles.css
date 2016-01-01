@@ -28,6 +28,8 @@ h1 {
 	font-weight: 200;
 	letter-spacing: 0.02rem;
 	color: #0B799E;
+	overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 h3 {

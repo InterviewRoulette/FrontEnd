@@ -161,7 +161,7 @@ var TheInterview = React.createClass({
 
 var InterviewDetails = React.createClass({
 	getInitialState: function() {
-		return({interviewtitle: "my_interview"});
+		return({interviewtitle: null, showAlert: false});
 	},
 
 	//get iid from database after adding new interview
@@ -182,7 +182,10 @@ var InterviewDetails = React.createClass({
     },
 
     continueToNextStage: function() {
-    	this.addInterviewToServer();
+    	if(this.state.interviewtitle != null)
+    		this.addInterviewToServer();
+    	else
+    		this.setState({showAlert: true});
     },
 
     handleChange: function (name, e) {
@@ -191,7 +194,13 @@ var InterviewDetails = React.createClass({
       this.setState(change);
     },
 
+    closeAlert: function() {
+    	this.setState({showAlert: false});
+    },
+
 	render: function() {
+		var notitlealert = this.state.showAlert ? <NoTitleAlert close={this.closeAlert}/> : null;
+
 		return (
 			<div>
 				<section className="white bluetop">
@@ -266,6 +275,9 @@ var InterviewDetails = React.createClass({
 					</div>
 
 				</section>
+
+				{notitlealert}
+				
 			</div>
 		);
 	}
@@ -336,6 +348,22 @@ var Alert = React.createClass({
 			<div className="alert">
 				<div className="alert_inner">
 					<p>This feature is coming soon!</p>
+					<div onClick={this.close} className="button alert_button">Gotcha</div>
+				</div>
+			</div>);
+	}
+});
+
+var NoTitleAlert = React.createClass({
+	close: function() {
+		this.props.close();
+	},
+
+	render: function() {
+		return (
+			<div className="alert">
+				<div className="alert_inner">
+					<p>Please enter a name for your video</p>
 					<div onClick={this.close} className="button alert_button">Gotcha</div>
 				</div>
 			</div>);

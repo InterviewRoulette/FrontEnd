@@ -266,6 +266,8 @@ footer {
     font-style: italic;
     margin-top: 10px;
     margin-bottom: -10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .vid_box {

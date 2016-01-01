@@ -188,6 +188,8 @@ class MediaRecorder(RecordingHandler):
             #s3_client.upload_file(local file, bucket, remote name)
             s3_client.upload_file('public/outputs/'+iid+'.webm', 'interviewroulettevideos', iid+'.webm')
             s3_client.put_object_acl(ACL='public-read', Bucket='interviewroulettevideos', Key=iid+'.webm')
+            os.remove('public/outputs/'+iid+'.webm')
+            print('public/outputs/'+iid+'.webm removed after upload')
 
         # cleanup video text file to make testing easier
         try:

@@ -6,8 +6,17 @@ var Interview = React.createClass({
 			interview_title: interviewtitle,
 			video_url: videourl,
 			text_url: texturl,
-			button_text: "Start Playback"
+			button_text: "Start Playback",
+			showAlert: false
 		});
+	},
+
+	showAlert: function() {
+		this.setState({showAlert: true});
+	},
+
+	closeAlert: function() {
+		this.setState({showAlert: false});
 	},
 
 	togglePlayback: function() {
@@ -34,6 +43,8 @@ var Interview = React.createClass({
 	},
 
 	render: function() {
+
+		console.log(this.video_url)
 
 		return (
 			<div>
@@ -64,11 +75,29 @@ var Interview = React.createClass({
 						</div>
 					</div>
 				</section>
+
+				{this.state.showAlert ? <NoVideoAlert close={this.closeAlert}/> : null}
 			</div>
 		);
 	}
 });
 
+
+var NoVideoAlert = React.createClass({
+	close: function() {
+		this.props.close();
+	},
+
+	render: function() {
+		return (
+			<div className="alert">
+				<div className="alert_inner">
+					<p>No video found!</p>
+					<div onClick={this.close} className="button alert_button">Gotcha</div>
+				</div>
+			</div>);
+	}
+});
 
 
 ReactDOM.render(

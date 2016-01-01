@@ -93,24 +93,21 @@ class RecordingHandler(tornado.websocket.WebSocketHandler):
     def on_close(self):
         print(self.name + " websocket closed with id" + self.interviewid)
 
+    @property
+    def db(self):
+        return self.application.db
+
 
 class Interview(BaseHandler):
     @gen.coroutine
     def get(self):
         vid = self.get_argument('vid', True)
         cursor = yield self.db.execute("SELECT title,v_url,t_url FROM videos WHERE vid="+vid)
-        try:
-            v_title = cursor.fetchone()[0]
-        except:
-            v_title = "title_default"
-        try:
-            v_url = cursor.fetchone()[1]
-        except:
-            v_url = "https://s3-eu-west-1.amazonaws.com/interviewroulettevideos/"+vid+".webm"
-        try:
-            t_url = cursor.fetchone()[2]
-        except:
-            t_url = "text_url_default"
+        row = cursor.fetchone()
+
+        v_title = row[0]
+        v_url = row[1]
+        t_url = row[2]
 
         self.render('public/interview.html', videotitle = v_title, videourl = v_url, texturl = t_url)
 
@@ -186,11 +183,15 @@ class MediaRecorder(RecordingHandler):
             yield p.wait_for_exit()
             self.redis.set("media:"+iid, "true")
             
-            #s3_client.upload_file(local file, bucket, remote name)
+            #upload to s3
             s3_client.upload_file('public/outputs/'+iid+'.webm', 'interviewroulettevideos', iid+'.webm')
             s3_client.put_object_acl(ACL='public-read', Bucket='interviewroulettevideos', Key=iid+'.webm')
             os.remove('public/outputs/'+iid+'.webm')
             print('public/outputs/'+iid+'.webm removed after upload')
+
+            #update database with url
+            v_url = "https://s3-eu-west-1.amazonaws.com/interviewroulettevideos/"+iid+".webm"
+            yield self.db.execute("UPDATE videos SET v_url='" +v_url+ "' WHERE vid="+iid+";")
             
             #tell client here that all's good to go to watch video on their end
 

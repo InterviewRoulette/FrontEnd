@@ -1,9 +1,36 @@
 var Interview = React.createClass({
 	getInitialState: function() {
 		//these are obtained in interview.html and sent via tornado templating
-		return ({interview_title: interviewtitle,
-		video_url: videourl,
-		text_url: texturl});
+		return ({
+			playback: false,
+			interview_title: interviewtitle,
+			video_url: videourl,
+			text_url: texturl,
+			button_text: "Start Playback"
+		});
+	},
+
+	togglePlayback: function() {
+		if (this.state.playback)
+		{
+			this.refs.playback.pause();
+			this.setState({
+				playback: false,
+				button_text: "Start Playback"
+			});
+		}
+		else
+		{
+			this.refs.playback.play();
+			this.setState({
+				playback: true,
+				button_text: "Stop Playback"
+			});
+		}
+	},	
+
+	playback: function() {
+		
 	},
 
 	render: function() {
@@ -16,10 +43,18 @@ var Interview = React.createClass({
 						<h1>{this.state.interview_title}</h1>
 						<br />
 						<br />
-						<div>
-							<video controls ref="playback" src={this.state.video_url} id="camera-stream" className="video_capture_window"></video>
-							<textarea ref="textarea" className="coding_capture_window" placeholder="..." />
-						</div>
+						<center>
+							<div>
+								<video ref="playback" src={this.state.video_url} id="camera-stream" className="video_capture_window"></video>
+								<textarea ref="textarea" className="coding_capture_window" placeholder="..." />
+							</div>
+
+							<br />
+							<br />
+							<br />
+						
+							<div className="button" onClick={this.togglePlayback}>{this.state.button_text}</div>
+						</center>
 
 						<div className="comment_container">
 							<h4>{'Comments (feature coming soon!)'}</h4>

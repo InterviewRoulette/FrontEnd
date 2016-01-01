@@ -11,6 +11,11 @@ var Interview = React.createClass({
 		});
 	},
 
+	componentDidMount: function() {
+		if(this.state.video_url == null || this.state.video_url === "None")
+			this.showAlert();
+	},
+
 	showAlert: function() {
 		this.setState({showAlert: true});
 	},
@@ -43,8 +48,6 @@ var Interview = React.createClass({
 	},
 
 	render: function() {
-
-		console.log(this.video_url)
 
 		return (
 			<div>
@@ -92,7 +95,7 @@ var NoVideoAlert = React.createClass({
 		return (
 			<div className="alert">
 				<div className="alert_inner">
-					<p>No video found!</p>
+					<p>Sorry, no interview found!</p>
 					<div onClick={this.close} className="button alert_button">Gotcha</div>
 				</div>
 			</div>);

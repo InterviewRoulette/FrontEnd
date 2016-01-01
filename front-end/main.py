@@ -37,18 +37,18 @@ public_root = os.path.join(os.path.dirname(__file__), 'public')
 def videoRowToJson(row):
     return {
         "vid": row[0],
-        "title": row[1],
-        "username": "djprof", #ToDo: FIX THIS!!!
-        "video_url": row[2],
-        "audio_url": row[3],
-        "text_url": row[4],
-        "rating": row[5],
+        "username": row[1],
+        "title": row[2],
+        "video_url": row[3],
+        "audio_url": row[4],
+        "text_url": row[5],
+        "rating": row[6],
         "thumbnail": "www.jamesburnside.com/", #ToDo: ADD THIS TO DATABASE
-        "difficulty": row[6],
-        "length": row[7],
-        "type": row[8],
-        "category": row[9],
-        "language": row[10],
+        "difficulty": row[7],
+        "length": row[8],
+        "type": row[9],
+        "category": row[10],
+        "language": row[11],
         "comments":  #ToDo: THIS AS WELL!!!
         [
             {"djprof": "Greatest interview in all existance"},
@@ -190,6 +190,8 @@ class MediaRecorder(RecordingHandler):
             s3_client.put_object_acl(ACL='public-read', Bucket='interviewroulettevideos', Key=iid+'.webm')
             os.remove('public/outputs/'+iid+'.webm')
             print('public/outputs/'+iid+'.webm removed after upload')
+            
+            #tell client here that all's good to go to watch video on their end
 
         # cleanup video text file to make testing easier
         try:

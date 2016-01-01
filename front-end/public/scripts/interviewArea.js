@@ -17,6 +17,7 @@ window.InterviewArea = React.createClass({
 
     startRecording() {
         var ws = new WebSocket(`wss://${location.host}/api/interviews/record/text`);
+        this.props.set_ws(ws);
         ws.onopen = (evt) => {
             ws.send(this.props.id);
             this.streamCreator = new KeyboardStreamCreator(ws);
@@ -353,7 +354,6 @@ class KeyboardStreamCreator {
 
     stopRecording() {
         this.recording = false;
-        this.ws.close();
     }
 
 }

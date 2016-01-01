@@ -1,7 +1,12 @@
 var InterviewApp = React.createClass({
 	getInitialState: function() {
 		// dont use stage 0 - boring and pointless!
-		return ({currentStage: 1, showAlert: false, interviewid: null});
+		return ({
+			currentStage: 1, 
+			showAlert: false, 
+			interviewid: null,
+			text_websocket: null
+		});
 	},
 
 	nextStage: function() {
@@ -20,19 +25,23 @@ var InterviewApp = React.createClass({
 		this.setState({interviewid: id});
 	},
 
+	setWebsocket: function(ws) {
+		this.setState({text_websocket: ws});
+	},
+
 	render: function() {
 		var component = null;
 		switch(this.state.currentStage){
 
 			//case 0: component = (<InterviewInstructions showAlert={this.showAlert} nextStage={this.nextStage}/>); break;
 			case 1: component = (<InterviewDetails setInterviewID={this.setInterviewID} showAlert={this.showAlert} nextStage={this.nextStage}/>); break;
-			case 2: component = (<TheInterview iid={this.state.interviewid} showAlert={this.showAlert} nextStage={this.nextStage}/>); break;
+			case 2: component = (<TheInterview iid={this.state.interviewid} showAlert={this.showAlert} nextStage={this.nextStage} set_ws={this.setWebsocket}/>); break;
 			// case 3:
 			    // this.stream = window.streamCreator.stream;
 			    // component = (<PreparingInterview nextStage={this.nextStage}/>);
 			    // break;
 			// case 4: component = (<NewQuestion nextStage={this.nextStage} stream={this.stream}/>);break;
-			case 3: component = (<Finalizing iid={this.state.interviewid} nextStage={this.nextStage}/>);break;
+			case 3: component = (<Finalizing iid={this.state.interviewid} text_websocket={this.state.text_websocket} nextStage={this.nextStage}/>);break;
 			case 4: component = (<Finished iid={this.state.interviewid} nextStage={this.nextStage}/>);break;
 
 			default: this.setState({currentStage: 1});
@@ -84,6 +93,7 @@ var Finalizing = React.createClass({
 
 	componentDidMount: function() {
 		this.isFinishedProcessingVideo();
+
 	},
 
     isFinishedProcessingVideo: function() {
@@ -94,6 +104,7 @@ var Finalizing = React.createClass({
             type: "post",
             data: this.props.iid,
             success: function(data) {
+            	this.props.text_websocket.close();
                 thee.props.nextStage();
             }.bind(this),
             error: function(xhr, status, err) {
@@ -152,7 +163,7 @@ var TheInterview = React.createClass({
 					<h1>All set to begin!</h1>
 					<br />
 					<br />
-                    <InterviewArea type="record" id={this.props.iid} onFinish={this.props.nextStage}/>
+                    <InterviewArea type="record" set_ws={this.props.set_ws} id={this.props.iid} onFinish={this.props.nextStage}/>
 				</div>
 			</section>
 		);

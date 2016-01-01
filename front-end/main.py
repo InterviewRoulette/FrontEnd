@@ -37,7 +37,7 @@ public_root = os.path.join(os.path.dirname(__file__), 'public')
 def videoRowToJson(row):
     return {
         "vid": row[0],
-        "username": row[1],
+        "username": row[13],
         "title": row[2],
         "video_url": row[3],
         "audio_url": row[4],
@@ -54,7 +54,8 @@ def videoRowToJson(row):
             {"djprof": "Greatest interview in all existance"},
             {"djprof": "Me again, just rewatched it, this was so good!"},
             {"jb12459": "@djprof, not too bad I guess..."}
-        ]
+        ],
+        "dateadded": "ignore for now as well"
     }
 
 
@@ -118,7 +119,7 @@ class GetInterviews(BaseHandler):
     @gen.coroutine
     def get(self):
         # query database
-        cursor = yield self.db.execute("SELECT * FROM videos;")
+        cursor = yield self.db.execute("SELECT videos.*, users.username FROM videos, users WHERE users.uid=videos.uid")
         results = cursor.fetchall()
 
         # stick results in json to send to client

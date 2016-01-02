@@ -154,54 +154,56 @@ class MediaRecorder(RecordingHandler):
         self.type = type
         self.format = format
 
-    def message(self, message):
-        print("%s recieved blob number %d" % (self.type, self.blob_count))
-        filename = "%s_%d_%s.%s" % (self.interviewid, self.blob_count, self.type, self.format)
-        with open("intermediates/%s_%s.txt" % (self.interviewid, self.type), "a") as f:
-            f.write("file '"+filename+"'\n")
-        with open("intermediates/%s" % filename, "w") as f:
-            f.write(message)
-        self.blob_count += 1
-
     @gen.coroutine
-    def on_close(self):
-        print(self.type + " recording stopped, merging files")
-        iid = self.interviewid
-        txt = "intermediates/%s_%s.txt" % (iid, self.type)
-        out = "intermediates/%s_%s.%s" % (iid, self.type, self.format)
+    def message(self, message):
+        if(message == "close"):
+            print(self.type + " recording stopped, merging files")
+            iid = self.interviewid
+            txt = "intermediates/%s_%s.txt" % (iid, self.type)
+            out = "intermediates/%s_%s.%s" % (iid, self.type, self.format)
 
-        with open(txt, 'r') as f:
-            print(f.read())
+            with open(txt, 'r') as f:
+                print(f.read())
 
-        p = Subprocess("ffmpeg -y -nostdin -f concat -i %s -c copy %s" % (txt, out), shell=True)
-        yield p.wait_for_exit()
-        self.redis.set(self.type+":"+iid, "true")
-
-        if self.redis.get("video:"+iid) == "true" and self.redis.get("audio:"+iid) == "true":
-            print("merging video and audio files")
-            p = Subprocess("ffmpeg -y -nostdin -i intermediates/%s_audio.wav -i intermediates/%s_video.webm -c:a libvorbis -c:v copy -shortest public/outputs/%s.webm" % (iid,iid,iid), shell=True)
+            p = Subprocess("ffmpeg -y -nostdin -f concat -i %s -c copy %s" % (txt, out), shell=True)
             yield p.wait_for_exit()
-            self.redis.set("media:"+iid, "true")
-            
-            #upload to s3
-            s3_client.upload_file('public/outputs/'+iid+'.webm', 'interviewroulettevideos', iid+'.webm')
-            s3_client.put_object_acl(ACL='public-read', Bucket='interviewroulettevideos', Key=iid+'.webm')
-            os.remove('public/outputs/'+iid+'.webm')
-            print('public/outputs/'+iid+'.webm removed after upload')
+            self.redis.set(self.type+":"+iid, "true")
 
-            #update database with url
-            v_url = "https://s3-eu-west-1.amazonaws.com/interviewroulettevideos/"+iid+".webm"
-            yield self.db.execute("UPDATE videos SET v_url='" +v_url+ "' WHERE vid="+iid+";")
-            
-            #tell client here that all's good to go to watch video on their end
+            if self.redis.get("video:"+iid) == "true" and self.redis.get("audio:"+iid) == "true":
+                print("merging video and audio files")
+                p = Subprocess("ffmpeg -y -nostdin -i intermediates/%s_audio.wav -i intermediates/%s_video.webm -c:a libvorbis -c:v copy -shortest public/outputs/%s.webm" % (iid,iid,iid), shell=True)
+                yield p.wait_for_exit()
+                self.redis.set("media:"+iid, "true")
+                
+                #upload to s3
+                s3_client.upload_file('public/outputs/'+iid+'.webm', 'interviewroulettevideos', iid+'.webm')
+                s3_client.put_object_acl(ACL='public-read', Bucket='interviewroulettevideos', Key=iid+'.webm')
+                os.remove('public/outputs/'+iid+'.webm')
+                print('public/outputs/'+iid+'.webm removed after upload')
 
-        # cleanup video text file to make testing easier
-        try:
-            os.remove("intermediates/%s_%s.txt" % (self.interviewid, self.type))
-            print("removed old txt file")
-        except OSError:
-            print("didn't remove old txt file")
-            pass
+                #update database with url
+                v_url = "https://s3-eu-west-1.amazonaws.com/interviewroulettevideos/"+iid+".webm"
+                yield self.db.execute("UPDATE videos SET v_url='" +v_url+ "' WHERE vid="+iid+";")
+                
+                #tell client here that all's good to go to watch video on their end
+                self.write_message("done processing video")
+
+            # cleanup video text file to make testing easier
+            try:
+                os.remove("intermediates/%s_%s.txt" % (self.interviewid, self.type))
+                print("removed old txt file")
+            except OSError:
+                print("didn't remove old txt file")
+
+        else:
+            print("%s recieved blob number %d" % (self.type, self.blob_count))
+            filename = "%s_%d_%s.%s" % (self.interviewid, self.blob_count, self.type, self.format)
+            with open("intermediates/%s_%s.txt" % (self.interviewid, self.type), "a") as f:
+                f.write("file '"+filename+"'\n")
+            with open("intermediates/%s" % filename, "w") as f:
+                f.write(message)
+            self.blob_count += 1
+
 
 class IsFinishedProcessing(RecordingHandler):
     def post(self):

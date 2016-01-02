@@ -5,7 +5,8 @@ var InterviewApp = React.createClass({
 			currentStage: 1, 
 			showAlert: false, 
 			interviewid: null,
-			text_websocket: null
+			video_websocket: null,
+			audio_websocket: null
 		});
 	},
 
@@ -25,8 +26,8 @@ var InterviewApp = React.createClass({
 		this.setState({interviewid: id});
 	},
 
-	setWebsocket: function(ws) {
-		this.setState({text_websocket: ws});
+	setWebsocket: function(vs,as) {
+		this.setState({video_websocket: vs, audio_websocket: as});
 	},
 
 	render: function() {
@@ -41,7 +42,7 @@ var InterviewApp = React.createClass({
 			    // component = (<PreparingInterview nextStage={this.nextStage}/>);
 			    // break;
 			// case 4: component = (<NewQuestion nextStage={this.nextStage} stream={this.stream}/>);break;
-			case 3: component = (<Finalizing iid={this.state.interviewid} text_websocket={this.state.text_websocket} nextStage={this.nextStage}/>);break;
+			case 3: component = (<Finalizing iid={this.state.interviewid} video_websocket={this.state.video_websocket} audio_websocket={this.state.audio_websocket} nextStage={this.nextStage}/>);break;
 			case 4: component = (<Finished iid={this.state.interviewid} nextStage={this.nextStage}/>);break;
 
 			default: this.setState({currentStage: 1});
@@ -91,26 +92,24 @@ var Finalizing = React.createClass({
         return ({heardFromServer: false});
     },
 
-	componentDidMount: function() {
-		this.isFinishedProcessingVideo();
+    finishedProcessingVideo: function() {
+    	this.props.video_websocket.close();
+    	this.props.audio_websocket.close();
+        this.props.nextStage();
+    },
 
+	componentDidMount: function() {
+		var thee = this;
+		this.props.video_websocket.onmessage = function (message) {
+			thee.finishedProcessingVideo();
+		};
+		this.props.audio_websocket.onmessage = function (message) {
+			thee.finishedProcessingVideo();
+		};
+		this.props.video_websocket.send('close');
+		this.props.audio_websocket.send('close');
 	},
 
-    isFinishedProcessingVideo: function() {
-    	var thee = this;
-        $.ajax({
-            url: "/api/interviews/record/finished",
-            cache: false,
-            type: "post",
-            data: this.props.iid,
-            success: function(data) {
-            	this.props.text_websocket.close();
-                thee.props.nextStage();
-            }.bind(this),
-            error: function(xhr, status, err) {
-            }.bind(this)
-        });
-    },
 
 	render: function() {
 		return (

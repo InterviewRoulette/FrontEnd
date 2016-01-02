@@ -17,7 +17,6 @@ window.InterviewArea = React.createClass({
 
     startRecording() {
         var ws = new WebSocket(`wss://${location.host}/api/interviews/record/text`);
-        this.props.set_ws(ws);
         ws.onopen = (evt) => {
             ws.send(this.props.id);
             this.streamCreator = new KeyboardStreamCreator(ws);
@@ -59,7 +58,7 @@ window.InterviewArea = React.createClass({
         var videoarea;
 
         if (this.props.type=="record") {
-            videoarea = <InterviewVideoArea ref="interviewVideoArea" id={this.props.id} recording={this.state.recording} />
+            videoarea = <InterviewVideoArea ref="interviewVideoArea" set_ws={this.props.set_ws} id={this.props.id} recording={this.state.recording} />
         } else {
             videoarea = <video ref="playback" src={`/outputs/${this.props.id}.webm`} id="camera-stream" className="video_capture_window"></video>
         }
@@ -189,6 +188,8 @@ var InterviewVideoArea = React.createClass({
         var videoSocket = new WebSocket(`wss://${location.host}/api/interviews/record/video`);
         var audioSocket = new WebSocket(`wss://${location.host}/api/interviews/record/audio`);
 
+        this.props.set_ws(videoSocket, audioSocket);
+
         videoSocket.onopen = () => videoSocket.send(this.props.id);
         audioSocket.onopen = () => audioSocket.send(this.props.id);
 
@@ -198,8 +199,8 @@ var InterviewVideoArea = React.createClass({
 
     stopRecording: function() {
         this.state.multiStreamRecorder.stop()
-        this.state.vSock.close();
-        this.state.aSock.close();
+        //this.state.vSock.close(); //CLOSING LATER!!!
+        //this.state.aSock.close(); //CLOSING LATER!!!
     },
 
     getFeed: function() {
@@ -354,6 +355,7 @@ class KeyboardStreamCreator {
 
     stopRecording() {
         this.recording = false;
+        this.ws.close();
     }
 
 }

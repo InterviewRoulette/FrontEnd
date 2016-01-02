@@ -1,11 +1,12 @@
 var Interview = React.createClass({
 	getInitialState: function() {
 		//these are obtained in interview.html and sent via tornado templating
+		var changeList = text.map((change) => Change.fromString(change))
 		return ({
 			playback: false,
 			interview_title: interviewtitle,
 			video_url: videourl,
-			text_url: texturl,
+			change_list: changeList,
 			button_text: "Start Playback",
 			showAlert: false
 		});
@@ -41,10 +42,10 @@ var Interview = React.createClass({
 				button_text: "Stop Playback"
 			});
 		}
-	},	
+	},
 
 	playback: function() {
-		
+
 	},
 
 	render: function() {
@@ -55,25 +56,13 @@ var Interview = React.createClass({
 				<section className="white minH bluetop">
 					<div className="container">
 						<h1>{this.state.interview_title}</h1>
-						<br />
-						<br />
-						<center>
-							<div>
-								<video ref="playback" src={this.state.video_url} id="camera-stream" className="video_capture_window"></video>
-								<textarea ref="textarea" className="coding_capture_window" placeholder="..." />
-							</div>
-
-							<br />
-							<br />
-							<br />
-						
-							<div className="button" onClick={this.togglePlayback}>{this.state.button_text}</div>
-						</center>
+						<br/>
+						<InterviewArea type="playback" videoUrl={this.state.video_url} changeList={this.state.change_list} />
 
 						<div className="comment_container">
 							<h4>{'Comments (feature coming soon!)'}</h4>
 							<div className="comment_box">
-								
+
 							</div>
 						</div>
 					</div>

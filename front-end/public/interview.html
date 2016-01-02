@@ -7,7 +7,7 @@
             // get tornado template variables
             var interviewtitle = '{{videotitle}}';
             var videourl = '{{videourl}}';
-            var texturl = '{{texturl}}';
+            var text = {% raw text %};
         </script>
         <link rel="stylesheet" href="css/styles.css" />
         <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.0/react.js"></script>
@@ -26,6 +26,7 @@
 
         <script type="text/babel" src="scripts/header.js"></script>
         <script type="text/babel" src="scripts/footer.js"></script>
+        <script type="text/babel" src="scripts/interviewArea.js"></script>
         <script type="text/babel" src="scripts/interview.js"></script>
 
     </body>

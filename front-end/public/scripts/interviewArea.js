@@ -2,8 +2,9 @@ window.InterviewArea = React.createClass({
     propTypes: {
         type: React.PropTypes.oneOf(["playback","record", "static"]).isRequired,
         defaultText: React.PropTypes.string,
-        id: React.PropTypes.string.isRequired,
-        onFinish: React.PropTypes.func
+        onFinish: React.PropTypes.func,
+        changeList: React.PropTypes.array,
+        videoUrl: React.PropTypes.string
     },
 
     prevTimestamp: 0,
@@ -20,7 +21,6 @@ window.InterviewArea = React.createClass({
         ws.onopen = (evt) => {
             ws.send(this.props.id);
             this.streamCreator = new KeyboardStreamCreator(ws);
-            window.streamCreator = this.streamCreator;
             this.setState({recording: true});
             this.refs.interviewVideoArea.startRecording();
         }
@@ -29,7 +29,7 @@ window.InterviewArea = React.createClass({
     startPlayback() {
         this.setState({playing: true});
         this.refs.playback.play();
-        setTimeout(this.nextTextChange, this.props.stream[0].timestamp - this.prevTimestamp);
+        setTimeout(this.nextTextChange, this.props.changeList[0].timestamp - this.prevTimestamp);
     },
 
     stopPlayback() {
@@ -44,11 +44,11 @@ window.InterviewArea = React.createClass({
     },
 
     nextTextChange() {
-        var c = this.props.stream.shift();
+        var c = this.props.changeList.shift();
         this.refs.interviewTextArea.processChange(c);
         this.prevTimestamp = c.timestamp;
-        if (this.props.stream.length > 0 && this.state.playing) {
-            setTimeout(this.nextTextChange, this.props.stream[0].timestamp - this.prevTimestamp);
+        if (this.props.changeList.length > 0 && this.state.playing) {
+            setTimeout(this.nextTextChange, this.props.changeList[0].timestamp - this.prevTimestamp);
         } else {
             this.stopPlayback();
         }
@@ -56,16 +56,10 @@ window.InterviewArea = React.createClass({
 
     render() {
         var videoarea;
-
-        if (this.props.type=="record") {
-            videoarea = <InterviewVideoArea ref="interviewVideoArea" set_ws={this.props.set_ws} id={this.props.id} recording={this.state.recording} />
-        } else {
-            videoarea = <video ref="playback" src={`/outputs/${this.props.id}.webm`} id="camera-stream" className="video_capture_window"></video>
-        }
-
         var button;
         switch(this.props.type) {
             case "playback":
+                videoarea = <video ref="playback" src={this.props.videoUrl} id="camera-stream" className="video_capture_window"></video>
                 if (this.state.playing) {
                     button = <div className="tc">
                         <div onClick={this.stopPlayback} className="button">Stop Playback</div>
@@ -77,6 +71,7 @@ window.InterviewArea = React.createClass({
                 }
                 break;
             case "record":
+                videoarea = <InterviewVideoArea ref="interviewVideoArea" set_ws={this.props.set_ws} id={this.props.id} recording={this.state.recording} />
                 if (this.state.recording) {
                     button = <div className="tc">
                         <div onClick={this.stopRecording} className="button">Finish Interview</div>
@@ -96,9 +91,9 @@ window.InterviewArea = React.createClass({
         return <div className="interview_area">
                 {videoarea}
                 <InterviewTextArea ref="interviewTextArea" defaultValue={this.props.defaultText} streamCreator={this.streamCreator} readOnly={this.props.type !== "playback"} />
-                
+
                 <br />
-                <InterviewQuestionArea currentstate={instructionstate}/>
+                {this.props.type !== "playback" ? <InterviewQuestionArea currentstate={instructionstate}/> : null}
                 <br />
 
                 {button}
@@ -194,13 +189,11 @@ var InterviewVideoArea = React.createClass({
         audioSocket.onopen = () => audioSocket.send(this.props.id);
 
         this.setState({vSock: videoSocket, aSock: audioSocket});
-        this.state.multiStreamRecorder.start(5000); //3000 is blob interval time
+        this.state.multiStreamRecorder.start(3000); //3000 is blob interval time
     },
 
     stopRecording: function() {
         this.state.multiStreamRecorder.stop()
-        //this.state.vSock.close(); //CLOSING LATER!!!
-        //this.state.aSock.close(); //CLOSING LATER!!!
     },
 
     getFeed: function() {
@@ -256,7 +249,7 @@ var InterviewTextArea = React.createClass({
     getInitialState() {
         this.nextCursorLocation = -1;
         return {
-            text: this.props.defaultValue || "Type your answer here",
+            text: "",
         }
     },
 
@@ -303,7 +296,7 @@ var InterviewTextArea = React.createClass({
     },
 
     render() {
-        return <textarea ref="textarea" onKeyDown={this.eventHandler} onKeyPress={this.eventHandler} className="coding_capture_window" placeholder={this.state.text} onChange={()=>{}}/>
+        return <textarea ref="textarea" onKeyDown={this.eventHandler} onKeyPress={this.eventHandler} className="coding_capture_window" value={this.state.text} onChange={()=>{}} placeholder="Type your answer here!"/>
     }
 
 });
@@ -311,7 +304,7 @@ var InterviewTextArea = React.createClass({
 class KeyboardStreamCreator {
     constructor(ws) {
         this.ws = ws;
-        this.stream = [];
+        //this.stream = [];
         this.startTime = Date.now();
         this.recording = true;
     }
@@ -348,7 +341,7 @@ class KeyboardStreamCreator {
         if (change) {
             cb(change);
             change.time = Date.now()-this.startTime;
-            this.stream.push(change);
+            //this.stream.push(change);
             this.ws.send(change.toString());
         }
     }
@@ -394,4 +387,6 @@ class Change {
         return new Change(type, parseInt(strs[1],10), parseInt(strs[2],10), data);
     }
 }
+
+window.Change = Change;
 

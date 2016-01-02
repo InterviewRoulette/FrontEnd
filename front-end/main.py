@@ -107,9 +107,8 @@ class Interview(BaseHandler):
 
         v_title = row[0]
         v_url = row[1]
-        t_url = row[2]
-
-        self.render('public/interview.html', videotitle = v_title, videourl = v_url, texturl = t_url)
+        text = self.application.redis.lrange("text:"+vid, 0, -1)
+        self.render('public/interview.html', videotitle = v_title, videourl = v_url, text=text)
 
 
 class GetInterviews(BaseHandler):
@@ -174,7 +173,7 @@ class MediaRecorder(RecordingHandler):
                 p = Subprocess("ffmpeg -y -nostdin -i intermediates/%s_audio.wav -i intermediates/%s_video.webm -c:a libvorbis -c:v copy -shortest public/outputs/%s.webm" % (iid,iid,iid), shell=True)
                 yield p.wait_for_exit()
                 self.redis.set("media:"+iid, "true")
-                
+
                 #upload to s3
                 s3_client.upload_file('public/outputs/'+iid+'.webm', 'interviewroulettevideos', iid+'.webm')
                 s3_client.put_object_acl(ACL='public-read', Bucket='interviewroulettevideos', Key=iid+'.webm')
@@ -184,7 +183,7 @@ class MediaRecorder(RecordingHandler):
                 #update database with url
                 v_url = "https://s3-eu-west-1.amazonaws.com/interviewroulettevideos/"+iid+".webm"
                 yield self.db.execute("UPDATE videos SET v_url='" +v_url+ "' WHERE vid="+iid+";")
-                
+
                 #tell client here that all's good to go to watch video on their end
                 self.write_message("done processing video")
 

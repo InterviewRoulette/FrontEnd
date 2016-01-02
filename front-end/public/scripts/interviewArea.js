@@ -11,8 +11,11 @@ window.InterviewArea = React.createClass({
 
     getInitialState() {
         return {
+            changeList: this.props.changeList,
+            oldChangeList: [],
             recording: false,
-            playing: false
+            playing: false,
+            shouldReset: false
         }
     },
 
@@ -27,9 +30,13 @@ window.InterviewArea = React.createClass({
     },
 
     startPlayback() {
-        this.setState({playing: true});
+        if (this.state.shouldReset) {
+            this.refs.playback.currentTime = 0;
+            this.refs.interviewTextArea.reset();
+        }
+        this.setState({playing: true, shouldReset: false});
         this.refs.playback.play();
-        setTimeout(this.nextTextChange, this.props.changeList[0].timestamp - this.prevTimestamp);
+        setTimeout(this.nextTextChange, this.state.changeList[0].timestamp - this.prevTimestamp);
     },
 
     stopPlayback() {
@@ -44,13 +51,19 @@ window.InterviewArea = React.createClass({
     },
 
     nextTextChange() {
-        var c = this.props.changeList.shift();
+        var c = this.state.changeList.shift();
+        this.state.oldChangeList.push(c);
+        this.setState({oldChangeList: this.state.oldChangeList});
         this.refs.interviewTextArea.processChange(c);
         this.prevTimestamp = c.timestamp;
-        if (this.props.changeList.length > 0 && this.state.playing) {
-            setTimeout(this.nextTextChange, this.props.changeList[0].timestamp - this.prevTimestamp);
+        if (this.state.changeList.length > 0 && this.state.playing) {
+            setTimeout(this.nextTextChange, this.state.changeList[0].timestamp - this.prevTimestamp);
         } else {
             this.stopPlayback();
+            if (this.state.changeList.length == 0) {
+                this.setState({shouldReset: true, changeList: this.state.oldChangeList, oldChangeList: []});
+                this.prevTimestamp = 0;
+            }
         }
     },
 
@@ -271,6 +284,11 @@ var InterviewTextArea = React.createClass({
                 console.log("unknown change type");
         }
         this.setState({text: newText});
+    },
+
+    reset() {
+        this.nextCursorLocation = -1;
+        this.setState({text: ""});
     },
 
     eventHandler(e) {

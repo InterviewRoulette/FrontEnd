@@ -140,7 +140,6 @@ class TextRecorder(RecordingHandler):
     name = "text"
 
     def message(self, message):
-        print("sending " + self.interviewid + " " + message + " to redis ")
         self.redis.rpush("text:"+self.interviewid, message)
 
 class MediaRecorder(RecordingHandler):
